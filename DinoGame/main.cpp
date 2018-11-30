@@ -8,6 +8,7 @@ int PlayGame();
 void StatsDisp();
 void CreditsDisp();
 void InstructionsDisp();
+void DrawDino();
 
 int main(void){
     int choice, replay = 1;
@@ -206,4 +207,8 @@ int CreditsDisp(){
 
     // Wait for touch release
     while(!LCD.Touch(&x, &y));
+}
+
+void DrawDino(){
+
 }
