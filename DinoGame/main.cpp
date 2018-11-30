@@ -2,6 +2,7 @@
 #include <LCDColors.h>
 #include <FEHIO.h>
 #include <FEHUtility.h>
+#include <math.h>
 
 int MainMenu(); // Returns an int depending on what option is pressed
 int PlayGame();
@@ -63,7 +64,7 @@ int MainMenu(){
     // Text
     LCD.WriteAt("Play", 62, 76);    // Top right
     LCD.WriteAt("Stats", 62, 76);   // Top left
-    LCD.WriteAt("Quit", 62, 76);    // Bottom right
+    LCD.WriteAt("Instructions", 62, 76);    // Bottom right
     LCD.WriteAt("Credits", 62, 76); // Bottom left
 
     // Wait for touch screen press
@@ -101,7 +102,7 @@ int MainMenu(){
         LCD.SetFontColor(WHITE);
         LCD.FillRectangle(57, 131, 95, 45);  // Bottom right
         LCD.SetFontColor(BLUE);
-        LCD.WriteAt("Quit", 62, 76);    // Bottom right
+        LCD.WriteAt("Instructions", 62, 76);    // Bottom right
         Sleep(500);
 
         return(3);
@@ -122,7 +123,8 @@ int MainMenu(){
 int PlayGame(){
     float x, y;
     bool gameOver = false;
-    int jump = 0, crouch = 0;
+    int x1, y1, jumpheight = 100;
+    double time;
 
     LCD.SetBackgroundColor(WHITE);
 
@@ -142,38 +144,13 @@ int PlayGame(){
     Sleep(500);
     LCD.Clear();
 
-    LCD.DrawHorizontalLine(180, 0, 319);
-    LCD.DrawHorizontalLine(181, 0, 319);
-    LCD.DrawHorizontalLine(182, 0, 319);
-
-    LCD.DrawRectangle(25, 130, 25, 50);
-
     while(!gameOver){
-        x = 0;
-        y = 0;
-        // Get touch values
-        LCD.Touch(&x, &y);
 
-        if(y > 120){
-            crouch = 1;
-            LCD.Write("Touched at ");
-            LCD.Write(x);
-            LCD.Write(", ");
-            LCD.WriteLine(y);
-            LCD.Write("crouch = ");
-            LCD.WriteLine(crouch);
-            crouch = 0;
-        }
-        else if(y < 120 && y != 0){
-            jump = 1;
-            LCD.Write("Touched at ");
-            LCD.Write(x);
-            LCD.Write(", ");
-            LCD.WriteLine(y);
-            LCD.Write("jump = ");
-            LCD.WriteLine(jump);
-            jump = 0;
-        }
+        LCD.Clear();
+        LCD.DrawDino(25, 130);
+        LCD.DrawHorizontalLine(180, 0, 319);
+        LCD.DrawHorizontalLine(181, 0, 319);
+        LCD.DrawHorizontalLine(182, 0, 319);
     }
 
     // Wait for touch
@@ -185,7 +162,20 @@ int PlayGame(){
     return(0);
 }
 
-int StatsDisp(){
+void InstructionsDisp(){
+    LCD.SetBackgroundColor(WHITE);
+    LCD.Clear();
+    LCD.SetFontColor(BLACK);
+    LCD.Write("Instructions");
+
+    // Wait for touch
+    while(LCD.Touch(&x, &y));
+
+    // Wait for touch release
+    while(!LCD.Touch(&x, &y));
+}
+
+void StatsDisp(){
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
@@ -198,7 +188,7 @@ int StatsDisp(){
     while(!LCD.Touch(&x, &y));
 }
 
-int CreditsDisp(){
+void CreditsDisp(){
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
@@ -211,7 +201,7 @@ int CreditsDisp(){
     while(!LCD.Touch(&x, &y));
 }
 
-void DrawDinoR(x, y){
+void DrawDinoR(int x1, int y1){
     LCD.SetFontColor( 16777215);
     LCD.DrawPixel(0 + x1, 0 + y1 );
     LCD.SetFontColor( 16777215);
@@ -3657,7 +3647,7 @@ void DrawDinoR(x, y){
 
 }
 
-void DrawDinoL(x, y){
+void DrawDinoL(int x1, int y1){
     LCD.SetFontColor( 16777215);
     LCD.DrawPixel(0 + x1, 0 + y1 );
     LCD.SetFontColor( 16777215);
@@ -7101,7 +7091,7 @@ void DrawDinoL(x, y){
 
 }
 
-void CrawDinoJ(x, y){
+void CrawDinoJ(int x1, int y1){
     LCD.SetFontColor( 16777215);
     LCD.DrawPixel(0 + x1, 0 + y1 );
     LCD.SetFontColor( 16777215);
