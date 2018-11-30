@@ -8,13 +8,15 @@ int PlayGame();
 void StatsDisp();
 void CreditsDisp();
 void InstructionsDisp();
-void DrawDino();
+void DrawDinoR(int x, int y);
+void DrawDinoL(int x, int y);
+void DrawDinoJ(int x, int y);
 
 int main(void){
     int choice, replay = 1;
     bool quit = false;
 
-    while(!quit){
+    do{
         choice = MainMenu();
 
         switch(choice){
@@ -29,7 +31,7 @@ int main(void){
             case 4: CreditsDisp();
                     break;
         }
-    }
+    }while(!quit);
 }
 
 int MainMenu(){
@@ -209,6 +211,14 @@ int CreditsDisp(){
     while(!LCD.Touch(&x, &y));
 }
 
-void DrawDino(){
+void DrawDinoR(x, y){
+
+}
+
+void DrawDinoL(x, y){
+
+}
+
+void CrawDinoJ(x, y){
 
 }
