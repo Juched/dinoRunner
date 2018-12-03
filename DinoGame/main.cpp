@@ -15177,3 +15177,19 @@ void DrawDinoC(int x1, int y1){
     LCD.DrawPixel(69 + x1, 32 + y1 );
 
 }
+void DrawObs(int x1, int y1){
+    //7, 160
+    //41,64
+    LCD.SetFontColor(BLACK);
+    LCD.FillRectangle(x1 +  41, y1 + 7, 23, 153);
+    
+    //47,110
+    //14, 31
+    LCD.FillRectangle(x1 +  14, y1 + 47, 17, 63);
+    //74,90
+    LCD.FillRectangle(x1 +  74, y1 + 47, 16, 63);
+    //94,106
+    LCD.FillRectangle(x1 +  31, y1 + 94, 10, 11);
+    //94, 106
+    LCD.FillRectangle(x1 +  64, y1 + 94, 10, 11);
+}
