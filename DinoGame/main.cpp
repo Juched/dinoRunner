@@ -4,7 +4,7 @@
 #include <FEHUtility.h>
 #include <math.h>
 
-#define JUMPHEIGHT 10
+#define JUMPHEIGHT 30
 #define GAMESPEED 20
 
 int MainMenu(); // Returns an int depending on what option is pressed
@@ -12,11 +12,12 @@ int PlayGame();
 void StatsDisp();
 void CreditsDisp();
 void InstructionsDisp();
-void DrawFrame(double t, int frame, int x1, int y1, int crouch);
+void DrawFrame(double t, int frame, int x1, int y1, int crouch, int x2, int y2);
 void DrawDinoR(int x, int y);
 void DrawDinoL(int x, int y);
 void DrawDinoJ(int x, int y);
 void DrawDinoC(int x, int y);
+void DrawObs(int x, int y);
 
 int main(void){
     int choice, replay = 1;
@@ -127,8 +128,8 @@ int MainMenu(){
 
 int PlayGame(){
     float x, y;
-    bool gameOver = false;
-    int x1 = 40, y1 = 137, crouch = 0;
+    bool gameOver = false, touch = false;
+    int x1 = 40, y1 = 137, crouch = 0, x2 = 200, y2 = 100;
     long int frame = 1;
     int t = TimeNowMSec(), delta_t;
 
@@ -136,33 +137,32 @@ int PlayGame(){
         crouch = 0; // Dino doesn't crouch by default
         delta_t = TimeNowMSec();
 
-        if(LCD.Touch(&x, &y) || y1 < 137){
-            if(y <= 120){
-                crouch = 0;
-                y1 = JUMPHEIGHT*((delta_t - t)*(delta_t - t)/1000000) - 50*(delta_t - t)/1000 + 137;
-            }
-            else if(LCD.Touch(&x, &y) && y > 120){
-                crouch = 1;
-                // Adjust x1 and y1 to account for different image dimensions
-            }
+        touch = LCD.Touch(&x, &y);
+        LCD.WriteAt(touch, 0, 25);
+        LCD.WriteAt(frame/TimeNow(), 270, 0);
+
+        if(touch || y1 < 137){
+            crouch = 0;
+            y1 = JUMPHEIGHT*((delta_t - t)*(delta_t - t)/1000000) - 50*(delta_t - t)/1000 + 137;
         }
-        if(LCD.Touch(&x, &y)){
-            LCD.Write("\nTouched");
+        else{
+            t = TimeNowMSec();
         }
+
         if(y1 > 137){
             y1 = 137;
         }
 
         if(frame % 2 == 0){
-            DrawFrame(t, frame, x1, y1, crouch);
-            Sleep(100);
+            DrawFrame(t, frame, x1, y1, crouch, x2, y2);
         }
         frame++;
+        touch = false;
     }
     return(0);  // Set return up so 0 means go to main menu, 1 means play again
 }
 
-void DrawFrame(double t, int frame, int x1, int y1, int crouch){
+void DrawFrame(double t, int frame, int x1, int y1, int crouch, int x2, int y2){
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
@@ -172,18 +172,20 @@ void DrawFrame(double t, int frame, int x1, int y1, int crouch){
     LCD.DrawHorizontalLine(181, 0, 319);
     LCD.DrawHorizontalLine(182, 0, 319);
 
-    if(frame % 4 >= 0 && frame % 4 < 2){
+    if(frame % 4 >= 0 && frame % 4 < 2 && y1 == 137){
         DrawDinoL(x1, y1);
     }
-    else if(frame % 4 >= 2 && frame % 4 <= 3){
+    else if(frame % 4 >= 2 && frame % 4 <= 3 && y1 == 137){
         DrawDinoR(x1, y1);
     }
     else if(y1 < 137){
         DrawDinoJ(x1, y1);
     }
-    else if(crouch = 1){
+    else if(crouch == 1){
         DrawDinoC(x1, y1);
     }
+
+    DrawObs(x2, y2);
 }
 
 void InstructionsDisp(){
@@ -15186,19 +15188,20 @@ void DrawDinoC(int x1, int y1){
     LCD.DrawPixel(69 + x1, 32 + y1 );
 
 }
-void DrawObs(int x1, int y1){
+
+void DrawObs(int x2, int y2){
     //7, 160
     //41,64
     LCD.SetFontColor(BLACK);
-    LCD.FillRectangle(x1 +  41, y1 + 7, 23, 153);
+    LCD.FillRectangle(x2 +  41, y2 + 7, 4, 45);
     
     //47,110
     //14, 31
-    LCD.FillRectangle(x1 +  14, y1 + 47, 17, 63);
+    LCD.FillRectangle(x2 +  14, y2 + 47, 17, 63);
     //74,90
-    LCD.FillRectangle(x1 +  74, y1 + 47, 16, 63);
+    LCD.FillRectangle(x2 +  74, y2 + 47, 16, 63);
     //94,106
-    LCD.FillRectangle(x1 +  31, y1 + 94, 10, 11);
+    LCD.FillRectangle(x2 +  31, y2 + 94, 10, 11);
     //94, 106
-    LCD.FillRectangle(x1 +  64, y1 + 94, 10, 11);
+    LCD.FillRectangle(x2 +  64, y2 + 94, 10, 11);
 }
