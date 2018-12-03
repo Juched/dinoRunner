@@ -10554,7 +10554,7 @@ void DrawDinoJ(int x1, int y1){
 
 }
 
-void DrawDinoC(int x1, int ya){
+void DrawDinoC(int x1, int y1){
     LCD.SetFontColor( 14277081);
     LCD.DrawPixel(0 + x1, 0 + y1 );
     LCD.SetFontColor( 13027014);
