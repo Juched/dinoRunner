@@ -4,14 +4,19 @@
 #include <FEHUtility.h>
 #include <math.h>
 
+#define JUMPHEIGHT 100;
+#define GAMESPEED 20;
+
 int MainMenu(); // Returns an int depending on what option is pressed
 int PlayGame();
 void StatsDisp();
 void CreditsDisp();
 void InstructionsDisp();
+void DrawFrame(double t, int frame, int x1, int y1, int crouch);
 void DrawDinoR(int x, int y);
 void DrawDinoL(int x, int y);
 void DrawDinoJ(int x, int y);
+void DrawDinoC(int x, int y);
 
 int main(void){
     int choice, replay = 1;
@@ -123,46 +128,57 @@ int MainMenu(){
 int PlayGame(){
     float x, y;
     bool gameOver = false;
-    int x1, y1, jumpheight = 100;
-    double time;
+    int x1 = 50, y1 = 137, frame = 1, crouch = 0;
+    double t = TimeNow();
 
+    while(!gameOver){
+        crouch = 0; // Dino doesn't crouch by default
+
+        if(LCD.Touch(&x, &y) || y1 < 137){
+            if(y <= 120){
+                crouch = 0;
+                y1 = (TimeNow() - t)*(TimeNow() - t) - 20*(TimeNow() - t) + 137;
+            }
+            else if(LCD.Touch(&x, &y) && y > 120){
+                crouch = 1;
+                // Adjust x1 and y1 to account for different image dimensions
+            }
+        }
+        if(y1 > 137){
+            y1 = 137;
+        }
+
+        DrawFrame(t, frame, x1, y1, crouch);
+        frame++;
+    }
+    return(0);  // Set return up so 0 means go to main menu, 1 means play again
+}
+
+void DrawFrame(double t, int frame, int x1, int y1, int crouch){
     LCD.SetBackgroundColor(WHITE);
-
     LCD.Clear();
     LCD.SetFontColor(BLACK);
 
-    LCD.WriteAt("3", 155, 115);
-    Sleep(1000);
-    LCD.Clear();
-    LCD.WriteAt("2", 155, 115);
-    Sleep(1000);
-    LCD.Clear();
-    LCD.WriteAt("1", 155, 115);
-    Sleep(1000);
-    LCD.Clear();
-    LCD.WriteAt("Go!", 155, 115);
-    Sleep(500);
-    LCD.Clear();
+    LCD.DrawHorizontalLine(180, 0, 319);
+    LCD.DrawHorizontalLine(181, 0, 319);
+    LCD.DrawHorizontalLine(182, 0, 319);
 
-    while(!gameOver){
-
-        LCD.Clear();
-        LCD.DrawDino(25, 130);
-        LCD.DrawHorizontalLine(180, 0, 319);
-        LCD.DrawHorizontalLine(181, 0, 319);
-        LCD.DrawHorizontalLine(182, 0, 319);
+    if(frame % 10 >= 0 && frame % 10 < 5){
+        DrawDinoL(x1, y1);
     }
-
-    // Wait for touch
-    while(LCD.Touch(&x, &y));
-
-    // Wait for touch release
-    while(!LCD.Touch(&x, &y));
-
-    return(0);
+    else if(frame % 10 >= 5 && frame % 10 <= 9){
+        DrawDinoR(x1, y1);
+    }
+    else if(y1 < 137){
+        DrawDinoJ(x1, y1);
+    }
+    else if(crouch = 1){
+        DrawDinoC(x1, y1);
+    }
 }
 
 void InstructionsDisp(){
+    float x, y;
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
@@ -176,6 +192,7 @@ void InstructionsDisp(){
 }
 
 void StatsDisp(){
+    float x, y;
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
@@ -189,6 +206,7 @@ void StatsDisp(){
 }
 
 void CreditsDisp(){
+    float x, y;
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
@@ -7091,7 +7109,7 @@ void DrawDinoL(int x1, int y1){
 
 }
 
-void CrawDinoJ(int x1, int y1){
+void DrawDinoJ(int x1, int y1){
     LCD.SetFontColor( 16777215);
     LCD.DrawPixel(0 + x1, 0 + y1 );
     LCD.SetFontColor( 16777215);
@@ -10533,5 +10551,9 @@ void CrawDinoJ(int x1, int y1){
     LCD.SetFontColor( 16777215);
     LCD.DrawPixel(39 + x1, 42 + y1 );
 
+
+}
+
+void DrawDinoC(int x1, int ya){
 
 }
