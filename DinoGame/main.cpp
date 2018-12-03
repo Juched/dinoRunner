@@ -4,8 +4,8 @@
 #include <FEHUtility.h>
 #include <math.h>
 
-#define JUMPHEIGHT 100;
-#define GAMESPEED 20;
+#define JUMPHEIGHT 10
+#define GAMESPEED 20
 
 int MainMenu(); // Returns an int depending on what option is pressed
 int PlayGame();
@@ -128,27 +128,35 @@ int MainMenu(){
 int PlayGame(){
     float x, y;
     bool gameOver = false;
-    int x1 = 50, y1 = 137, frame = 1, crouch = 0;
-    double t = TimeNow();
+    int x1 = 40, y1 = 137, crouch = 0;
+    long int frame = 1;
+    int t = TimeNowMSec(), delta_t;
 
     while(!gameOver){
         crouch = 0; // Dino doesn't crouch by default
+        delta_t = TimeNowMSec();
 
         if(LCD.Touch(&x, &y) || y1 < 137){
             if(y <= 120){
                 crouch = 0;
-                y1 = (TimeNow() - t)*(TimeNow() - t) - 20*(TimeNow() - t) + 137;
+                y1 = JUMPHEIGHT*((delta_t - t)*(delta_t - t)/1000000) - 50*(delta_t - t)/1000 + 137;
             }
             else if(LCD.Touch(&x, &y) && y > 120){
                 crouch = 1;
                 // Adjust x1 and y1 to account for different image dimensions
             }
         }
+        if(LCD.Touch(&x, &y)){
+            LCD.Write("\nTouched");
+        }
         if(y1 > 137){
             y1 = 137;
         }
 
-        DrawFrame(t, frame, x1, y1, crouch);
+        if(frame % 2 == 0){
+            DrawFrame(t, frame, x1, y1, crouch);
+            Sleep(100);
+        }
         frame++;
     }
     return(0);  // Set return up so 0 means go to main menu, 1 means play again
@@ -159,14 +167,15 @@ void DrawFrame(double t, int frame, int x1, int y1, int crouch){
     LCD.Clear();
     LCD.SetFontColor(BLACK);
 
+    LCD.Write(y1);
     LCD.DrawHorizontalLine(180, 0, 319);
     LCD.DrawHorizontalLine(181, 0, 319);
     LCD.DrawHorizontalLine(182, 0, 319);
 
-    if(frame % 10 >= 0 && frame % 10 < 5){
+    if(frame % 4 >= 0 && frame % 4 < 2){
         DrawDinoL(x1, y1);
     }
-    else if(frame % 10 >= 5 && frame % 10 <= 9){
+    else if(frame % 4 >= 2 && frame % 4 <= 3){
         DrawDinoR(x1, y1);
     }
     else if(y1 < 137){
@@ -10554,7 +10563,7 @@ void DrawDinoJ(int x1, int y1){
 
 }
 
-void DrawDinoC(int x1, int ya){
+void DrawDinoC(int x1, int y1){
     LCD.SetFontColor( 14277081);
     LCD.DrawPixel(0 + x1, 0 + y1 );
     LCD.SetFontColor( 13027014);
