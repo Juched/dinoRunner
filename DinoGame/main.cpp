@@ -8,7 +8,7 @@
 #define GAMESPEED 20
 #define DINOCOLOR 8355711
 
-int MainMenu(); // Returns an int depending on what option is pressed
+int MainMenu();
 int PlayGame();
 void StatsDisp();
 void CreditsDisp();
@@ -131,7 +131,7 @@ int PlayGame(){
     float x, y;
     bool gameOver = false, touch = false;
     int x1 = 40, y1 = 137, crouch = 0, x2 = 200, y2 = 100;
-    long int frame = 1;
+    int frame = 1;
     int t = TimeNowMSec(), delta_t;
 
     while(!gameOver){
@@ -140,11 +140,13 @@ int PlayGame(){
 
         touch = LCD.Touch(&x, &y);
         LCD.WriteAt(touch, 0, 25);
-        LCD.WriteAt(frame/TimeNow(), 270, 0);
+        LCD.WriteAt(frame/TimeNow(), 220, 0);
+        LCD.WriteAt("Score: ", 220, 25);
+        LCD.WriteAt(frame, 300, 25);    // Score is kept as number frames survived
 
         if(touch || y1 < 137){
             crouch = 0;
-            y1 = JUMPHEIGHT*((delta_t - t)*(delta_t - t)/1000000) - 50*(delta_t - t)/1000 + 137;
+            y1 = JUMPHEIGHT*((2*delta_t - t)*(2*delta_t - t)/1000000) - 50*(2*delta_t - t)/1000 + 137;
         }
         else{
             t = TimeNowMSec();
@@ -183,7 +185,7 @@ void DrawFrame(double t, int frame, int x1, int y1, int crouch, int x2, int y2){
         DrawDinoJ(x1, y1);
     }
     else if(crouch == 1){
-        DrawDinoC(x1, y1);
+        DrawDinoC(x1, y1 + 10);
     }
 
     DrawObs(x2, y2);
@@ -352,6 +354,9 @@ void DrawDinoJ(int x1, int y1){
 }
 
 void DrawDinoC(int x1, int y1){
+    // x1 and y1 are top left corner coordinates
+
+    LCD.SetFontColor(DINOCOLOR);
 
 }
 
