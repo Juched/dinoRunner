@@ -133,6 +133,8 @@ int PlayGame(){
     int x1 = 40, y1 = 137, crouch = 0, x2 = 200, y2 = 100;
     int frame = 1;
     int t = TimeNowMSec(), delta_t;
+    int vel = 0, grav = 4;
+
 
     // Start countdown
     LCD.SetBackgroundColor(WHITE);
@@ -162,17 +164,22 @@ int PlayGame(){
         LCD.WriteAt("Score: ", 170, 25);
         LCD.WriteAt(frame, 250, 25);    // Score is kept as number frames survived
 
-        if(touch || y1 < 137){
-            crouch = 0;
-            y1 = JUMPHEIGHT*((2*delta_t - t)*(2*delta_t - t)/1000000) - 50*(2*delta_t - t)/1000 + 137;
+        if(touch && y < 120){
+            vel = 20;
         }
-        else{
-            t = TimeNowMSec();
+        else(touch && y >= 120){
+            if(y1 < 137){
+                vel = vel - 5;
+            }else{
+                crouch = 1;
+            }
         }
-
+        y1 = y1 + vel;
         if(y1 > 137){
             y1 = 137;
+            vel = 0;
         }
+        vel = vel - grav;
 
         DrawFrame(t, frame, x1, y1, crouch, x2, y2);
         frame++;
