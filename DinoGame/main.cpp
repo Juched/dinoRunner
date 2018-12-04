@@ -2,7 +2,6 @@
 #include <LCDColors.h>
 #include <FEHIO.h>
 #include <FEHUtility.h>
-#include <math.h>
 
 #define JUMPHEIGHT 30
 #define GAMESPEED 20
@@ -18,7 +17,8 @@ void DrawDinoR(int x, int y);
 void DrawDinoL(int x, int y);
 void DrawDinoJ(int x, int y);
 void DrawDinoC(int x, int y);
-void DrawObs(int x, int y);
+void DrawBigObs(int x, int y);
+void DrawSmallObs(int x, int y);
 
 int main(void){
     int choice, replay = 1;
@@ -174,9 +174,7 @@ int PlayGame(){
             y1 = 137;
         }
 
-        if(frame % 2 == 0){
-            DrawFrame(t, frame, x1, y1, crouch, x2, y2);
-        }
+        DrawFrame(t, frame, x1, y1, crouch, x2, y2);
         frame++;
         touch = false;
     }
@@ -376,21 +374,49 @@ void DrawDinoC(int x1, int y1){
 
     LCD.SetFontColor(DINOCOLOR);
 
+    LCD.FillRectangle(x1 + 18, y1 + 3, 24, 19);
+    LCD.FillRectangle(x1, y1, 3, 8);
+    LCD.FillRectangle(x1 + 3, y1 + 3, 2, 8);
+    LCD.FillRectangle(x1 + 5, y1 + 3, 3, 10);
+    LCD.FillRectangle(x1 + 8, y1 + 5, 10, 11);
+    LCD.FillRectangle(x1 + 10, y1 + 16, 8, 2);
+    LCD.FillRectangle(x1 + 13, y1 + 18, 5, 3);
+
 }
 
-void DrawObs(int x2, int y2){
-    //7, 160
-    //41,64
-    LCD.SetFontColor(BLACK);
-    LCD.FillRectangle(x2 +  41, y2 + 7, 4, 45);
-    
-    //47,110
-    //14, 31
-    LCD.FillRectangle(x2 +  14, y2 + 47, 17, 63);
-    //74,90
-    LCD.FillRectangle(x2 +  74, y2 + 47, 16, 63);
-    //94,106
-    LCD.FillRectangle(x2 +  31, y2 + 94, 10, 11);
-    //94, 106
-    LCD.FillRectangle(x2 +  64, y2 + 94, 10, 11);
+void DrawBigObs(int x2, int y2){
+    LCD.SetFontColor(DINOCOLOR);
+
+    LCD.FillRectangle(x2 + 8, y2, 7, 48);
+    LCD.FillRectangle(x2 + 18, y2 + 6, 5, 21);
+    LCD.FillRectangle(x2, y2 + 6, 7, 15);
+    LCD.FillRectangle(x2 + 1, y2 + 18, 7, 5);
+    LCD.FillRectangle(x2 + 15, y2 + 25, 7, 4);
+    LCD.DrawHorizontalLine(y2 + 23, x2 + 3, x2 + 7);
+    LCD.DrawHorizontalLine(y2 + 29, x2 + 15, x2 + 19);
+
+    LCD.SetFontColor(WHITE);
+
+    LCD.DrawPixel(x2 + 8, y2);
+    LCD.DrawPixel(x2 + 14, y2);
+    LCD.DrawPixel(x2, y2 + 6);
+    LCD.DrawPixel(x2 + 5, y2 + 6);
+    LCD.DrawPixel(x2 + 18, y2 + 6);
+    LCD.DrawPixel(x2 + 22, y2 + 6);
+}
+
+void DrawSmallObs(int x3, int y3){
+    LCD.SetFontColor(DINOCOLOR);
+
+    LCD.FillRectangle(x3 + 4, y3, 4, 24);
+    LCD.FillRectangle(x3 + 9, y3 + 4, 3, 7);
+    LCD.FillRectangle(x3, y3 + 4, 3, 10);
+    LCD.FillRectangle(x3 + 1, y3 + 13, 3, 2);
+    LCD.FillRectangle(x3 + 8, y3 + 9, 3, 3);
+    LCD.DrawPixel(x3 + 1, y3 + 3);
+    LCD.DrawPixel(x3 + 10, y3 + 3);
+
+    LCD.SetFontColor(WHITE);
+    LCD.DrawPixel(x3 + 4, y3);
+    LCD.DrawPixel(x3 + 7, y3);
 }
