@@ -17,7 +17,8 @@ int PlayGame();
 void StatsDisp();
 void CreditsDisp();
 void InstructionsDisp();
-void DrawFrame(double t, int frame, int y1, int crouch, int x2, int x3);
+
+void DrawFrame(double t, int frame, int y1, int crouch, int x2, int x3, int obsType);
 void DrawDinoR(int y);
 void DrawDinoL(int y);
 void DrawDinoJ(int y);
@@ -142,7 +143,7 @@ int PlayGame(){
     int y1 = 137, crouch = 0, x2 = 300, x3;
     int frame = 1;
     int t = TimeNowMSec(), delta_t;
-    int vel = 0, grav = 4, cvel = 0;
+    int vel = 0, grav = 4, cvel = 0, obsType;
     int rand_num;
     srand(TimeNow()*1000);  // Random number seed
 
@@ -208,26 +209,27 @@ int PlayGame(){
 
         if(frame % 40 == 0){
             if(rand_num >= 0 && rand_num <= 9){ // One big cactus
-
+                 obsType = 1;
             }
             else if(rand_num > 9 && rand_num <= 17){    // Big and small
-
+                obsType = 2;
             }
             else if(rand_num > 17 && rand_num <= 23){   // One small
-
+                obsType = 3;
             }
             else if(rand_num > 23 && rand_num <= 25){   // Two bigs
-
+                obsType = 4;
             }
             else if(rand_num > 25 && rand_num <= 27){   // Two smalls
-
+                obsType = 5;
             }
             else{   // Pterodactyl
-
+                obsType = 6;
             }
         }
 
-        DrawFrame(t, frame, y1, crouch, x2, x3);
+        DrawFrame(t, frame, y1, crouch, x2, x3, obsType);
+
 
         Sleep(20);
 
@@ -237,7 +239,8 @@ int PlayGame(){
     return(0);  // Set return up so 0 means go to main menu, 1 means play again
 }
 
-void DrawFrame(double t, int frame, int y1, int crouch, int x2, int x3){
+void DrawFrame(double t, int frame, int y1, int crouch, int x2, int x3, int obsType){
+
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
