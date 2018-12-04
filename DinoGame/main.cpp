@@ -204,7 +204,7 @@ void DrawFrame(double t, int frame, int x1, int y1, int crouch, int x2, int y2){
         DrawDinoC(x1, y1 + 10);
     }
 
-    DrawObs(x2, y2);
+    DrawBigObs(x2, y2);
 }
 
 void InstructionsDisp(){
@@ -381,6 +381,26 @@ void DrawDinoC(int x1, int y1){
     LCD.FillRectangle(x1 + 8, y1 + 5, 10, 11);
     LCD.FillRectangle(x1 + 10, y1 + 16, 8, 2);
     LCD.FillRectangle(x1 + 13, y1 + 18, 5, 3);
+    LCD.FillRectangle(x1 + 42, y1 + 1, 28, 15);
+    LCD.FillRectangle(x1 + 42, y1 + 16, 15, 2);
+    LCD.FillRectangle(x1 + 47, y1 + 18, 17, 2);
+    LCD.FillRectangle(x1 + 37, y1 + 22, 4, 1);
+    LCD.FillRectangle(x1 + 37, y1 + 23, 2, 1);
+    LCD.FillRectangle(x1 + 37, y1 + 24, 5, 2);
+    LCD.FillRectangle(x1 + 16, y1 + 21, 14, 2);
+    LCD.FillRectangle(x1 + 15, y1 + 23, 7, 2);
+    LCD.FillRectangle(x1 + 23, y1 + 23, 7, 2);
+    LCD.FillRectangle(x1 + 15, y1 + 25, 6, 1);
+    LCD.FillRectangle(x1 + 23, y1 + 25, 4, 2);
+    LCD.FillRectangle(x1 + 15, y1 + 26, 4, 2);
+    LCD.FillRectangle(x1 + 23, y1 + 27, 3, 2);
+    LCD.FillRectangle(x1 + 15, y1 + 28, 3, 2);
+    LCD.FillRectangle(x1 + 15, y1 + 30, 2, 3);
+    LCD.FillRectangle(x1 + 17, y1 + 31, 2, 2);
+    LCD.FillRectangle(x1 + 23, y1 + 29, 2, 4);
+    LCD.FillRectangle(x1 + 25, y1 + 31, 2, 2);
+
+    LCD.SetFontColor(WHITE);
 
 }
 
