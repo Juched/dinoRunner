@@ -11,28 +11,28 @@
 #define y2 132  // Vertical position of big cacti
 #define y3 145  // Vertical position of small cacti
 #define y4 70   // Vertical position of pterodactyl
+#define OBSTRATE 30 // Rate at which obstacles appear
 
 int MainMenu();
 int PlayGame();
 void StatsDisp();
 void CreditsDisp();
 void InstructionsDisp();
-
-void DrawFrame(double t, int frame, int y1, int crouch, int x2, int x3, int obsType);
-void DrawDinoR(int y);
-void DrawDinoL(int y);
-void DrawDinoJ(int y);
-void DrawDinoC(int y);
-void DrawBigObs(int x);
-void Draw2BigObs(int x);
-void DrawSmallObs(int x);
-void Draw2SmallObs(int x);
-void DrawBigSmallObs(int x);
-void DrawPterodactyl(int x);
+void ClearLCD(int frame, int y1, int crouch, int x2, int x3, int obsType1, int obsType2);
+void DrawFrame(int frame, int y1, int crouch, int x2, int x3, int obsType1, int obsType2);
+void DrawDinoR(int y, int color);
+void DrawDinoL(int y, int color);
+void DrawDinoJ(int y, int color);
+void DrawDinoC(int y, int color);
+void DrawBigObs(int x, int color);
+void Draw2BigObs(int x, int color);
+void DrawSmallObs(int x, int color);
+void Draw2SmallObs(int x, int color);
+void DrawBigSmallObs(int x, int color);
+void DrawPterodactyl(int x, int color);
 
 int main(void){
     int choice, replay = 1;
-    bool quit = false;
 
     do{
         choice = MainMenu();
@@ -49,7 +49,7 @@ int main(void){
             case 4: CreditsDisp();
                     break;
         }
-    }while(!quit);
+    }while(true);
 }
 
 int MainMenu(){
@@ -142,9 +142,8 @@ int PlayGame(){
     bool gameOver = false, touch = false, jump = true;
     int y1 = 137, crouch = 0, x2 = 300, x3;
     int frame = 1;
-    int t = TimeNowMSec(), delta_t;
-    int vel = 0, grav = 4, cvel = 0, obsType;
-    int rand_num;
+    int vel = 0, grav = 4, x2vel = 0, x3vel = 0, obsType1, obsType2;
+    int rand_num, x2type, x3type;
     srand(TimeNow()*1000);  // Random number seed
 
 
@@ -166,10 +165,10 @@ int PlayGame(){
     LCD.Clear();
 
     while(!gameOver){
+        ClearLCD(frame - 1, y1, crouch, x2, x3, obsType1, obsType2);
+
         framerate = frame/TimeNow();
         crouch = 0;
-        rand_num = rand() % 30;
-
         touch = LCD.Touch(&x, &y);
         LCD.SetFontColor(BLACK);
         LCD.WriteAt(touch, 0, 25);
@@ -200,49 +199,251 @@ int PlayGame(){
             vel = 0;
             jump = true;
         }
+
         vel = vel - grav;
 
-        x2 = x2 - cvel;
+        x2 = x2 - x2vel;    // Moves obstacle 1 to the left
+        x3 = x3 - x3vel;    // Moves obstacle 2 to the left
+
         if(x2 <= 0){
             x2 = 300;
+            x2vel = 0;
+            obsType1 = 0;
+        }
+        if(x3 <= 0){
+            x3 = 300;
+            x3vel = 0;
+            obsType2 = 0;
         }
 
-        if(frame % 40 == 0){
+        if(frame % OBSTRATE == 0){
+            rand_num = rand() % 40;
             if(rand_num >= 0 && rand_num <= 9){ // One big cactus
-                 obsType = 1;
+                if(x2 == 300){
+                    obsType1 = 1;
+                    x2type = 1;
+                    x2vel = 10;
+                }
+                else if(x3 == 300){
+                    obsType2 = 1;
+                    x3type = 1;
+                    x3vel = 10;
+                }
             }
             else if(rand_num > 9 && rand_num <= 17){    // Big and small
-                obsType = 2;
+                if(x2 == 300){
+                    obsType1 = 2;
+                    x2type = 2;
+                    x2vel = 10;
+                }
+                else if(x3 == 300){
+                    obsType2 = 2;
+                    x3type = 2;
+                    x3vel = 10;
+                }
             }
             else if(rand_num > 17 && rand_num <= 23){   // One small
-                obsType = 3;
+                if(x2 == 300){
+                    obsType1 = 3;
+                    x2type = 3;
+                    x2vel = 10;
+                }
+                else if(x3 == 300){
+                    obsType2 = 3;
+                    x3type = 3;
+                    x3vel = 10;
+                }
             }
             else if(rand_num > 23 && rand_num <= 25){   // Two bigs
-                obsType = 4;
+                if(x2 == 300){
+                    obsType1 = 4;
+                    x2type = 4;
+                    x2vel = 10;
+                }
+                else if(x3 == 300){
+                    obsType2 = 4;
+                    x3type = 4;
+                    x3vel = 10;
+                }
             }
             else if(rand_num > 25 && rand_num <= 27){   // Two smalls
-                obsType = 5;
+                if(x2 == 300){
+                    obsType1 = 5;
+                    x2type = 5;
+                    x2vel = 10;
+                }
+                else if(x3 == 300){
+                    obsType2 = 5;
+                    x3type = 5;
+                    x3vel = 10;
+                }
             }
-            else{   // Pterodactyl
-                obsType = 6;
+            else if(rand_num > 27 && rand_num <= 29){   // Pterodactyl
+                if(x2 == 300){
+                    obsType1 = 6;
+                    x2type = 6;
+                    x2vel = 10;
+                }
+                else if(x3 == 300){
+                    obsType2 = 6;
+                    x3type = 6;
+                    x3vel = 10;
+                }
+            }
+            else{   // Nothing appears
+                if(x2 == 300){
+                    obsType1 = 0;
+                    x2type = 0;
+                    x2vel = 0;
+                }
+                else if(x3 == 300){
+                    obsType2 = 0;
+                    x3type = 0;
+                    x3vel = 0;
+                }
             }
         }
 
-        DrawFrame(t, frame, y1, crouch, x2, x3, obsType);
+        DrawFrame(frame, y1, crouch, x2, x3, obsType1, obsType2);
 
-
-        Sleep(20);
+        if(x1 + 40 >= x2 || x1 + 40 >= x3){
+            if(obsType1 == 1){  // One big cactus hitbox
+                if(x1 < x2 + 25){
+                    if(y1 + 43 > 132){
+                        break;
+                    }
+                }
+            }
+            if(obsType1 == 2){  // Big and small cactus hitbox
+                if(x1 < x2 + 40){
+                    if(y1 + 43 > 132){
+                        break;
+                    }
+                }
+            }
+            if(obsType1 == 3){  // One small cactus hitbox
+                if(x1 < x2 + 15){
+                    if(y1 + 43 > 145){
+                        break;
+                    }
+                }
+            }
+            if(obsType1 == 4){  // Two big cacti hitbox
+                if(x1 < x2 + 40){
+                    if(y1 + 43 > 132){
+                        break;
+                    }
+                }
+            }
+            if(obsType1 == 5){  // Two small cacti hitbox
+                if(x1 < x2 + 30){
+                    if(y1 + 43 > 145){
+                        break;
+                    }
+                }
+            }
+            if(obsType1 == 6){  // Pterodactyl hitbox
+                if(x1 < x2 + 45){
+                    if(y1 + 10 > y4 + 20 && !crouch){
+                        break;
+                    }
+                }
+            }
+            if(obsType2 == 1){  // One big cactus hitbox
+                if(x1 < x3 + 25){
+                    if(y1 + 43 > 132){
+                        break;
+                    }
+                }
+            }
+            if(obsType2 == 2){  // Big and small cactus hitbox
+                if(x1 < x3 + 40){
+                    if(y1 + 43 > 132){
+                        break;
+                    }
+                }
+            }
+            if(obsType2 == 3){  // One small cactus hitbox
+                if(x1 < x3 + 15){
+                    if(y1 + 43 > 145){
+                        break;
+                    }
+                }
+            }
+            if(obsType2 == 4){  // Two big cacti hitbox
+                if(x1 < x3 + 40){
+                    if(y1 + 43 > 132){
+                        break;
+                    }
+                }
+            }
+            if(obsType2 == 5){  // Two small cacti hitbox
+                if(x1 < x3 + 30){
+                    if(y1 + 43 > 145){
+                        break;
+                    }
+                }
+            }
+            if(obsType2 == 6){  // Pterodactyl hitbox
+                if(x1 < x3 + 45){
+                    if(y1 + 10 > y4 + 20 && !crouch){
+                        break;
+                    }
+                }
+            }
+        }
 
         frame++;
         touch = false;
+        Sleep(20);
     }
-    return(0);  // Set return up so 0 means go to main menu, 1 means play again
-}
-
-void DrawFrame(double t, int frame, int y1, int crouch, int x2, int x3, int obsType){
-
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
+
+    // Black border rectangles
+    LCD.FillRectangle(52, 66, 105, 55); // Top right
+    LCD.FillRectangle(162, 66, 105, 55);    // Top left
+
+    LCD.SetFontColor(WHITE);
+
+    // White filler rectangles
+    LCD.FillRectangle(57, 71, 95, 45);  // Top right
+    LCD.FillRectangle(167, 71, 95, 45);  // Top left
+
+    LCD.SetFontColor(BLACK);
+
+    // Text
+    LCD.WriteAt("Replay", 62, 76);    // Top right
+    LCD.WriteAt("Menu", 172, 76);   // Top left
+
+    // Change colors to show button has been pressed
+    if(x > 57 && x < 152 && y > 71 && y < 116){
+        LCD.SetFontColor(BLUE);
+        LCD.FillRectangle(52, 66, 105, 55); // Top right
+        LCD.SetFontColor(WHITE);
+        LCD.FillRectangle(57, 71, 95, 45);  // Top right
+        LCD.SetFontColor(BLUE);
+        LCD.WriteAt("Replay", 62, 76);    // Top right
+        Sleep(500);
+
+        return(1);
+    }
+    else if(x > 167 && x < 262 && y > 71 && y <116){
+        LCD.SetFontColor(BLUE);
+        LCD.FillRectangle(162, 66, 105, 55);    // Top left
+        LCD.SetFontColor(WHITE);
+        LCD.FillRectangle(167, 71, 95, 45);  // Top left
+        LCD.SetFontColor(BLUE);
+        LCD.WriteAt("Quit", 172, 76);   // Top left
+        Sleep(500);
+
+        return(0);
+    }
+}
+
+void DrawFrame(int frame, int y1, int crouch, int x2, int x3, int obsType1, int obsType2){
+
+    LCD.SetBackgroundColor(WHITE);
     LCD.SetFontColor(BLACK);
 
     LCD.Write(y1);
@@ -251,25 +452,103 @@ void DrawFrame(double t, int frame, int y1, int crouch, int x2, int x3, int obsT
     LCD.DrawHorizontalLine(182, 0, 319);
 
     if(frame % 4 >= 0 && frame % 4 < 2 && y1 == 137 && !crouch){
-        DrawDinoL(y1);
+        DrawDinoL(y1, DINOCOLOR);
     }
     else if(frame % 4 >= 2 && frame % 4 <= 3 && y1 == 137 && !crouch){
-        DrawDinoR(y1);
+        DrawDinoR(y1, DINOCOLOR);
     }
     else if(y1 < 137 && !crouch){
-        DrawDinoJ(y1);
+        DrawDinoJ(y1, DINOCOLOR);
     }
     else if(crouch){
-        DrawDinoC(y1 + 10);
+        DrawDinoC(y1 + 10, DINOCOLOR);
     }
 
-    if(x2 >= 300){
-        LCD.SetFontColor(WHITE);
+    switch(obsType1){
+        case 0: break;
+        case 1: DrawBigObs(x2, DINOCOLOR);
+                break;
+        case 2: DrawBigSmallObs(x2, DINOCOLOR);
+                break;
+        case 3: DrawSmallObs(x2, DINOCOLOR);
+                break;
+        case 4: Draw2BigObs(x2, DINOCOLOR);
+                break;
+        case 5: Draw2SmallObs(x2, DINOCOLOR);
+                break;
+        case 6: DrawPterodactyl(x2, DINOCOLOR);
+                break;
     }
-    else{
-        LCD.SetFontColor(DINOCOLOR);
+    switch(obsType2){
+        case 0: break;
+        case 1: DrawBigObs(x3, DINOCOLOR);
+                break;
+        case 2: DrawBigSmallObs(x3, DINOCOLOR);
+                break;
+        case 3: DrawSmallObs(x3, DINOCOLOR);
+                break;
+        case 4: Draw2BigObs(x3, DINOCOLOR);
+                break;
+        case 5: Draw2SmallObs(x3, DINOCOLOR);
+                break;
+        case 6: DrawPterodactyl(x3, DINOCOLOR);
+                break;
     }
-    DrawBigObs(x2);
+}
+
+void ClearLCD(int frame, int y1, int crouch, int x2, int x3, int obsType1, int obsType2){
+
+    LCD.SetBackgroundColor(WHITE);
+    LCD.SetFontColor(WHITE);
+
+    LCD.Write(y1);
+    LCD.DrawHorizontalLine(180, 0, 319);
+    LCD.DrawHorizontalLine(181, 0, 319);
+    LCD.DrawHorizontalLine(182, 0, 319);
+
+    if(frame % 4 >= 0 && frame % 4 < 2 && y1 == 137 && !crouch){
+        DrawDinoL(y1, 16777215);
+    }
+    else if(frame % 4 >= 2 && frame % 4 <= 3 && y1 == 137 && !crouch){
+        DrawDinoR(y1, 16777215);
+    }
+    else if(y1 < 137 && !crouch){
+        DrawDinoJ(y1, 16777215);
+    }
+    else if(crouch){
+        DrawDinoC(y1 + 10, 16777215);
+    }
+
+    switch(obsType1){
+        case 0: break;
+        case 1: DrawBigObs(x2, 16777215);
+                break;
+        case 2: DrawBigSmallObs(x2, 16777215);
+                break;
+        case 3: DrawSmallObs(x2, 16777215);
+                break;
+        case 4: Draw2BigObs(x2, 16777215);
+                break;
+        case 5: Draw2SmallObs(x2, 16777215);
+                break;
+        case 6: DrawPterodactyl(x2, 16777215);
+                break;
+    }
+    switch(obsType2){
+        case 0: break;
+        case 1: DrawBigObs(x3, 16777215);
+                break;
+        case 2: DrawBigSmallObs(x3, 16777215);
+                break;
+        case 3: DrawSmallObs(x3, 16777215);
+                break;
+        case 4: Draw2BigObs(x3, 16777215);
+                break;
+        case 5: Draw2SmallObs(x3, 16777215);
+                break;
+        case 6: DrawPterodactyl(x3, 16777215);
+                break;
+    }
 }
 
 void InstructionsDisp(){
@@ -320,11 +599,11 @@ void CreditsDisp(){
     Sleep(300);
 }
 
-void DrawDinoR(int y1){
+void DrawDinoR(int y1, int color){
     // x1 and y1 are top left corner coordinates
 
     //****************Standard among dinos R, L, and J****************
-    LCD.SetFontColor(DINOCOLOR);
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(22 + x1, y1, 18, 15);
     LCD.FillRectangle(13 + x1, 19 + y1, 13, 15);
@@ -351,7 +630,7 @@ void DrawDinoR(int y1){
     //****************End standard****************
 
     //****************Unique to right leg down****************
-    LCD.SetFontColor(DINOCOLOR);
+    LCD.SetFontColor(color);
     LCD.FillRectangle(10 + x1, 36 + y1, 4, 4);
     LCD.FillRectangle(14 + x1, 36 + y1, 2, 2);
     LCD.FillRectangle(10 + x1, 39 + y1, 2, 3);
@@ -359,11 +638,11 @@ void DrawDinoR(int y1){
     LCD.FillRectangle(21 + x1, 37 + y1, 5, 2);
 }
 
-void DrawDinoL(int y1){
+void DrawDinoL(int y1, int color){
     // x1 and y1 are top left corner coordinates
 
     //****************Standard among dinos R, L, and J****************
-    LCD.SetFontColor(DINOCOLOR);
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(22 + x1, y1, 18, 15);
     LCD.FillRectangle(13 + x1, 19 + y1, 13, 15);
@@ -390,7 +669,7 @@ void DrawDinoL(int y1){
     //****************End standard****************
 
     //****************Unique to left leg down****************
-    LCD.SetFontColor(DINOCOLOR);
+    LCD.SetFontColor(color);
 
     LCD.DrawHorizontalLine(36 + y1, 11 + x1, 14 + x1);
     LCD.FillRectangle(13 + x1, 37 + y1, 4, 2);
@@ -399,11 +678,11 @@ void DrawDinoL(int y1){
     LCD.FillRectangle(23 + x1, 41 + y1, 2, 2);
 }
 
-void DrawDinoJ(int y1){
+void DrawDinoJ(int y1, int color){
     // x1 and y1 are top left corner coordinates
 
     //****************Standard among dinos R, L, and J****************
-    LCD.SetFontColor(DINOCOLOR);
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(22 + x1, y1, 18, 15);
     LCD.FillRectangle(13 + x1, 19 + y1, 13, 15);
@@ -430,7 +709,7 @@ void DrawDinoJ(int y1){
     //****************End standard****************
 
     //****************Unique to jumping****************
-    LCD.SetFontColor(DINOCOLOR);
+    LCD.SetFontColor(color);
 
     LCD.DrawHorizontalLine(36 + y1, 11 + x1, 14 + x1);
     LCD.FillRectangle(13 + x1, 37 + y1, 2, 6);
@@ -440,10 +719,10 @@ void DrawDinoJ(int y1){
     LCD.FillRectangle(23 + x1, 41 + y1, 2, 2);
 }
 
-void DrawDinoC(int y1){
+void DrawDinoC(int y1, int color){
     // x1 and y1 are top left corner coordinates
 
-    LCD.SetFontColor(DINOCOLOR);
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(x1 + 18, y1 + 3, 24, 19);
     LCD.FillRectangle(x1, y1, 3, 8);
@@ -479,8 +758,8 @@ void DrawDinoC(int y1){
     LCD.FillRectangle(x1 + 49, y1 + 5, 3, 3);
 }
 
-void DrawBigObs(int x2){
-    LCD.SetFontColor(DINOCOLOR);
+void DrawBigObs(int x2, int color){
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(x2 + 8, y2, 7, 48);
     LCD.FillRectangle(x2 + 18, y2 + 6, 5, 21);
@@ -500,8 +779,8 @@ void DrawBigObs(int x2){
     LCD.DrawPixel(x2 + 22, y2 + 6);
 }
 
-void Draw2BigObs(int x2){
-    LCD.SetFontColor(DINOCOLOR);
+void Draw2BigObs(int x2, int color){
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(x2 + 8, y2, 7, 48);
     LCD.FillRectangle(x2 + 18, y2 + 6, 5, 21);
@@ -522,7 +801,7 @@ void Draw2BigObs(int x2){
 
     x2 = x2 + 25;
 
-    LCD.SetFontColor(DINOCOLOR);
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(x2 + 8, y2, 7, 48);
     LCD.FillRectangle(x2 + 18, y2 + 6, 5, 21);
@@ -542,8 +821,8 @@ void Draw2BigObs(int x2){
     LCD.DrawPixel(x2 + 22, y2 + 6);
 }
 
-void DrawSmallObs(int x3){
-    LCD.SetFontColor(DINOCOLOR);
+void DrawSmallObs(int x3, int color){
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(x3 + 4, y3, 4, 24);
     LCD.FillRectangle(x3 + 9, y3 + 4, 3, 7);
@@ -558,8 +837,8 @@ void DrawSmallObs(int x3){
     LCD.DrawPixel(x3 + 7, y3);
 }
 
-void Draw2SmallObs(int x3){
-    LCD.SetFontColor(DINOCOLOR);
+void Draw2SmallObs(int x3, int color){
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(x3 + 4, y3, 4, 24);
     LCD.FillRectangle(x3 + 9, y3 + 4, 3, 7);
@@ -575,7 +854,7 @@ void Draw2SmallObs(int x3){
 
     x3 = x3 + 15;
 
-    LCD.SetFontColor(DINOCOLOR);
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(x3 + 4, y3, 4, 24);
     LCD.FillRectangle(x3 + 9, y3 + 4, 3, 7);
@@ -590,10 +869,9 @@ void Draw2SmallObs(int x3){
     LCD.DrawPixel(x3 + 7, y3);
 }
 
-void DrawBigSmallObs(int x2){
-    int offset = 10;
+void DrawBigSmallObs(int x2, int color){
 
-    LCD.SetFontColor(DINOCOLOR);
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(x2 + 8, y2, 7, 48);
     LCD.FillRectangle(x2 + 18, y2 + 6, 5, 21);
@@ -614,23 +892,23 @@ void DrawBigSmallObs(int x2){
 
     x2 = x2 + 25;
 
-    LCD.SetFontColor(DINOCOLOR);
+    LCD.SetFontColor(color);
 
-    LCD.FillRectangle(x2 + 4, y2 + offset, 4, 24);
-    LCD.FillRectangle(x2 + 9, y2 + 4 + offset, 3, 7);
-    LCD.FillRectangle(x2, y2 + 4 + offset, 3, 10);
-    LCD.FillRectangle(x2 + 1, y2 + 13 + offset, 3, 2);
-    LCD.FillRectangle(x2 + 8, y2 + 9 + offset, 3, 3);
-    LCD.DrawPixel(x2 + 1, y2 + 3 + offset);
-    LCD.DrawPixel(x2 + 10, y2 + 3 + offset);
+    LCD.FillRectangle(x2 + 4, y3, 4, 24);
+    LCD.FillRectangle(x2 + 9, y3 + 4, 3, 7);
+    LCD.FillRectangle(x2, y3 + 4, 3, 10);
+    LCD.FillRectangle(x2 + 1, y3 + 13, 3, 2);
+    LCD.FillRectangle(x2 + 8, y3 + 9, 3, 3);
+    LCD.DrawPixel(x2 + 1, y3 + 3);
+    LCD.DrawPixel(x2 + 10, y3 + 3);
 
     LCD.SetFontColor(WHITE);
-    LCD.DrawPixel(x2 + 4, y2);
-    LCD.DrawPixel(x2 + 7, y2);
+    LCD.DrawPixel(x2 + 4, y3);
+    LCD.DrawPixel(x2 + 7, y3);
 }
 
-void DrawPterodactyl(int x4){
-    LCD.SetFontColor(DINOCOLOR);
+void DrawPterodactyl(int x4, int color){
+    LCD.SetFontColor(color);
 
     LCD.FillRectangle(x4, y4, 18, 13);
     LCD.FillRectangle(x4 + 14, y4 + 5, 4, 11);
