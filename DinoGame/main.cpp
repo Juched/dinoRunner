@@ -134,15 +134,33 @@ int PlayGame(){
     int frame = 1;
     int t = TimeNowMSec(), delta_t;
 
+    // Start countdown
+    LCD.SetBackgroundColor(WHITE);
+    LCD.Clear();
+    LCD.SetFontColor(DINOCOLOR);
+    LCD.WriteAt("3", 155, 115);
+    Sleep(1000);
+    LCD.Clear();
+    LCD.WriteAt("2", 155, 115);
+    Sleep(1000);
+    LCD.Clear();
+    LCD.WriteAt("1", 155, 115);
+    Sleep(1000);
+    LCD.Clear();
+    LCD.WriteAt("Go!", 155, 115);
+    Sleep(750);
+    LCD.Clear();
+
     while(!gameOver){
         crouch = 0; // Dino doesn't crouch by default
         delta_t = TimeNowMSec();
 
         touch = LCD.Touch(&x, &y);
         LCD.WriteAt(touch, 0, 25);
-        LCD.WriteAt(frame/TimeNow(), 220, 0);
-        LCD.WriteAt("Score: ", 220, 25);
-        LCD.WriteAt(frame, 300, 25);    // Score is kept as number frames survived
+        LCD.WriteAt(frame/TimeNow(), 220, 215); // Framerate for debug
+        LCD.WriteAt("Highscore: ", 170, 0); // Add this in
+        LCD.WriteAt("Score: ", 170, 25);
+        LCD.WriteAt(frame, 250, 25);    // Score is kept as number frames survived
 
         if(touch || y1 < 137){
             crouch = 0;
