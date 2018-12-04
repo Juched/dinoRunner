@@ -2,6 +2,7 @@
 #include <LCDColors.h>
 #include <FEHIO.h>
 #include <FEHUtility.h>
+#include <stdlib.h>
 
 #define JUMPHEIGHT 30
 #define GAMESPEED 20
@@ -12,13 +13,17 @@ int PlayGame();
 void StatsDisp();
 void CreditsDisp();
 void InstructionsDisp();
-void DrawFrame(double t, int frame, int x1, int y1, int crouch, int x2, int y2);
+void DrawFrame(double t, int frame, int x1, int y1, int crouch, int x2, int y2, int x3, int y3);
 void DrawDinoR(int x, int y);
 void DrawDinoL(int x, int y);
 void DrawDinoJ(int x, int y);
 void DrawDinoC(int x, int y);
 void DrawBigObs(int x, int y);
+void Draw2BigObs(int x, int y);
 void DrawSmallObs(int x, int y);
+void Draw2SmallObs(int x, int y);
+void DrawBigSmallObs(int x, int y);
+void DrawPterodactyl(int x, int y);
 
 int main(void){
     int choice, replay = 1;
@@ -71,7 +76,7 @@ int MainMenu(){
     // Text
     LCD.WriteAt("Play", 62, 76);    // Top right
     LCD.WriteAt("Stats", 172, 76);   // Top left
-    LCD.WriteAt("Instructions", 62, 136);    // Bottom right
+    LCD.WriteAt("Instr.", 62, 136);    // Bottom right
     LCD.WriteAt("Credits", 172, 136); // Bottom left
 
     // Wait for touch screen press
@@ -128,12 +133,14 @@ int MainMenu(){
 }
 
 int PlayGame(){
-    float x, y;
-    bool gameOver = false, touch = false;
-    int x1 = 40, y1 = 137, crouch = 0, x2 = 200, y2 = 100;
+    float x, y, framerate;
+    bool gameOver = false, touch = false, jump = true;
+    int x1 = 40, y1 = 137, crouch = 0, x2 = 300, x3, y2 = 132, y3 = 145;
     int frame = 1;
     int t = TimeNowMSec(), delta_t;
-    int vel = 0, grav = 4;
+    int vel = 0, grav = 4, cvel = 0;
+    int rand_num;
+    srand(TimeNow()*1000);  // Random number seed
 
 
     // Start countdown
@@ -154,41 +161,79 @@ int PlayGame(){
     LCD.Clear();
 
     while(!gameOver){
-        crouch = 0; // Dino doesn't crouch by default
-        delta_t = TimeNowMSec();
+        framerate = frame/TimeNow();
+        crouch = 0;
+        rand_num = rand() % 30;
 
         touch = LCD.Touch(&x, &y);
+        LCD.SetFontColor(BLACK);
         LCD.WriteAt(touch, 0, 25);
-        LCD.WriteAt(frame/TimeNow(), 220, 215); // Framerate for debug
-        LCD.WriteAt("Highscore: ", 170, 0); // Add this in
-        LCD.WriteAt("Score: ", 170, 25);
+        LCD.WriteAt(framerate, 220, 215); // Framerate for debug
+        LCD.WriteAt("Highscore: ", 140, 0); // Add this in
+        LCD.WriteAt("Score: ", 140, 25);
         LCD.WriteAt(frame, 250, 25);    // Score is kept as number frames survived
 
-        if(touch && y < 120){
-            vel = 20;
+        if(touch && y1 > 75 && y < 120 && jump){
+            vel = 25;
         }
-        else(touch && y >= 120){
+        else if(touch && y >= 120){
             if(y1 < 137){
-                vel = vel - 5;
+                vel = vel - 7;
+                crouch = 1;
             }else{
                 crouch = 1;
             }
         }
-        y1 = y1 + vel;
+
+        if(y1 > 75){
+            jump = false;
+        }
+
+        y1 = y1 - vel;
         if(y1 > 137){
             y1 = 137;
             vel = 0;
+            jump = true;
         }
         vel = vel - grav;
 
-        DrawFrame(t, frame, x1, y1, crouch, x2, y2);
+        x2 = x2 - cvel;
+        if(x2 <= 0){
+            x2 = 300;
+        }
+
+        if(frame % 40 == 0){
+            if(rand_num >= 0 && rand_num <= 9){ // One big cactus
+
+            }
+            else if(rand_num > 9 && rand_num <= 17){    // Big and small
+
+            }
+            else if(rand_num > 17 && rand_num <= 23){   // One small
+
+            }
+            else if(rand_num > 23 && rand_num <= 25){   // Two bigs
+
+            }
+            else if(rand_num > 25 && rand_num <= 27){   // Two smalls
+
+            }
+            else{   // Pterodactyl
+
+            }
+        }
+
+        DrawFrame(t, frame, x1, y1, crouch, x2, y2, x3, y3);
+
+        Sleep(20);
+
         frame++;
         touch = false;
     }
     return(0);  // Set return up so 0 means go to main menu, 1 means play again
 }
 
-void DrawFrame(double t, int frame, int x1, int y1, int crouch, int x2, int y2){
+void DrawFrame(double t, int frame, int x1, int y1, int crouch, int x2, int y2, int x3, int y3){
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
@@ -198,19 +243,25 @@ void DrawFrame(double t, int frame, int x1, int y1, int crouch, int x2, int y2){
     LCD.DrawHorizontalLine(181, 0, 319);
     LCD.DrawHorizontalLine(182, 0, 319);
 
-    if(frame % 4 >= 0 && frame % 4 < 2 && y1 == 137){
+    if(frame % 4 >= 0 && frame % 4 < 2 && y1 == 137 && !crouch){
         DrawDinoL(x1, y1);
     }
-    else if(frame % 4 >= 2 && frame % 4 <= 3 && y1 == 137){
+    else if(frame % 4 >= 2 && frame % 4 <= 3 && y1 == 137 && !crouch){
         DrawDinoR(x1, y1);
     }
-    else if(y1 < 137){
+    else if(y1 < 137 && !crouch){
         DrawDinoJ(x1, y1);
     }
-    else if(crouch == 1){
+    else if(crouch){
         DrawDinoC(x1, y1 + 10);
     }
 
+    if(x2 >= 300){
+        LCD.SetFontColor(WHITE);
+    }
+    else{
+        LCD.SetFontColor(DINOCOLOR);
+    }
     DrawBigObs(x2, y2);
 }
 
@@ -226,6 +277,8 @@ void InstructionsDisp(){
 
     // Wait for touch release
     while(!LCD.Touch(&x, &y));
+
+    Sleep(300);
 }
 
 void StatsDisp(){
@@ -240,6 +293,8 @@ void StatsDisp(){
 
     // Wait for touch release
     while(!LCD.Touch(&x, &y));
+
+    Sleep(300);
 }
 
 void CreditsDisp(){
@@ -254,6 +309,8 @@ void CreditsDisp(){
 
     // Wait for touch release
     while(!LCD.Touch(&x, &y));
+
+    Sleep(300);
 }
 
 void DrawDinoR(int x1, int y1){
@@ -262,7 +319,7 @@ void DrawDinoR(int x1, int y1){
     //****************Standard among dinos R, L, and J****************
     LCD.SetFontColor(DINOCOLOR);
 
-    LCD.FillRectangle(22 + x1, y1, 19, 15);
+    LCD.FillRectangle(22 + x1, y1, 18, 15);
     LCD.FillRectangle(13 + x1, 19 + y1, 13, 15);
     LCD.FillRectangle(18 + x1, 15 + y1, 11, 2);
     LCD.FillRectangle(16 + x1, 17 + y1, 14, 2);
@@ -301,7 +358,7 @@ void DrawDinoL(int x1, int y1){
     //****************Standard among dinos R, L, and J****************
     LCD.SetFontColor(DINOCOLOR);
 
-    LCD.FillRectangle(22 + x1, y1, 19, 15);
+    LCD.FillRectangle(22 + x1, y1, 18, 15);
     LCD.FillRectangle(13 + x1, 19 + y1, 13, 15);
     LCD.FillRectangle(18 + x1, 15 + y1, 11, 2);
     LCD.FillRectangle(16 + x1, 17 + y1, 14, 2);
@@ -341,7 +398,7 @@ void DrawDinoJ(int x1, int y1){
     //****************Standard among dinos R, L, and J****************
     LCD.SetFontColor(DINOCOLOR);
 
-    LCD.FillRectangle(22 + x1, y1, 19, 15);
+    LCD.FillRectangle(22 + x1, y1, 18, 15);
     LCD.FillRectangle(13 + x1, 19 + y1, 13, 15);
     LCD.FillRectangle(18 + x1, 15 + y1, 11, 2);
     LCD.FillRectangle(16 + x1, 17 + y1, 14, 2);
@@ -408,10 +465,56 @@ void DrawDinoC(int x1, int y1){
     LCD.FillRectangle(x1 + 25, y1 + 31, 2, 2);
 
     LCD.SetFontColor(WHITE);
-
+    LCD.FillRectangle(x1 + 42, y1 + 1, 2, 4);
+    LCD.FillRectangle(x1 + 44, y1 + 1, 3, 3);
+    LCD.DrawPixel(x1 + 47, y1 + 1);
+    LCD.FillRectangle(x1 + 68, y1 + 1, 2, 2);
+    LCD.FillRectangle(x1 + 49, y1 + 5, 3, 3);
 }
 
 void DrawBigObs(int x2, int y2){
+    LCD.SetFontColor(DINOCOLOR);
+
+    LCD.FillRectangle(x2 + 8, y2, 7, 48);
+    LCD.FillRectangle(x2 + 18, y2 + 6, 5, 21);
+    LCD.FillRectangle(x2, y2 + 6, 7, 15);
+    LCD.FillRectangle(x2 + 1, y2 + 18, 7, 5);
+    LCD.FillRectangle(x2 + 15, y2 + 25, 7, 4);
+    LCD.DrawHorizontalLine(y2 + 23, x2 + 3, x2 + 7);
+    LCD.DrawHorizontalLine(y2 + 29, x2 + 15, x2 + 19);
+
+    LCD.SetFontColor(WHITE);
+
+    LCD.DrawPixel(x2 + 8, y2);
+    LCD.DrawPixel(x2 + 14, y2);
+    LCD.DrawPixel(x2, y2 + 6);
+    LCD.DrawPixel(x2 + 5, y2 + 6);
+    LCD.DrawPixel(x2 + 18, y2 + 6);
+    LCD.DrawPixel(x2 + 22, y2 + 6);
+}
+
+void Draw2BigObs(int x2, int y2){
+    LCD.SetFontColor(DINOCOLOR);
+
+    LCD.FillRectangle(x2 + 8, y2, 7, 48);
+    LCD.FillRectangle(x2 + 18, y2 + 6, 5, 21);
+    LCD.FillRectangle(x2, y2 + 6, 7, 15);
+    LCD.FillRectangle(x2 + 1, y2 + 18, 7, 5);
+    LCD.FillRectangle(x2 + 15, y2 + 25, 7, 4);
+    LCD.DrawHorizontalLine(y2 + 23, x2 + 3, x2 + 7);
+    LCD.DrawHorizontalLine(y2 + 29, x2 + 15, x2 + 19);
+
+    LCD.SetFontColor(WHITE);
+
+    LCD.DrawPixel(x2 + 8, y2);
+    LCD.DrawPixel(x2 + 14, y2);
+    LCD.DrawPixel(x2, y2 + 6);
+    LCD.DrawPixel(x2 + 5, y2 + 6);
+    LCD.DrawPixel(x2 + 18, y2 + 6);
+    LCD.DrawPixel(x2 + 22, y2 + 6);
+
+    x2 = x2 + 25;
+
     LCD.SetFontColor(DINOCOLOR);
 
     LCD.FillRectangle(x2 + 8, y2, 7, 48);
@@ -446,4 +549,73 @@ void DrawSmallObs(int x3, int y3){
     LCD.SetFontColor(WHITE);
     LCD.DrawPixel(x3 + 4, y3);
     LCD.DrawPixel(x3 + 7, y3);
+}
+
+void Draw2SmallObs(int x3, int y3){
+    LCD.SetFontColor(DINOCOLOR);
+
+    LCD.FillRectangle(x3 + 4, y3, 4, 24);
+    LCD.FillRectangle(x3 + 9, y3 + 4, 3, 7);
+    LCD.FillRectangle(x3, y3 + 4, 3, 10);
+    LCD.FillRectangle(x3 + 1, y3 + 13, 3, 2);
+    LCD.FillRectangle(x3 + 8, y3 + 9, 3, 3);
+    LCD.DrawPixel(x3 + 1, y3 + 3);
+    LCD.DrawPixel(x3 + 10, y3 + 3);
+
+    LCD.SetFontColor(WHITE);
+    LCD.DrawPixel(x3 + 4, y3);
+    LCD.DrawPixel(x3 + 7, y3);
+
+    x3 = x3 + 15;
+
+    LCD.SetFontColor(DINOCOLOR);
+
+    LCD.FillRectangle(x3 + 4, y3, 4, 24);
+    LCD.FillRectangle(x3 + 9, y3 + 4, 3, 7);
+    LCD.FillRectangle(x3, y3 + 4, 3, 10);
+    LCD.FillRectangle(x3 + 1, y3 + 13, 3, 2);
+    LCD.FillRectangle(x3 + 8, y3 + 9, 3, 3);
+    LCD.DrawPixel(x3 + 1, y3 + 3);
+    LCD.DrawPixel(x3 + 10, y3 + 3);
+
+    LCD.SetFontColor(WHITE);
+    LCD.DrawPixel(x3 + 4, y3);
+    LCD.DrawPixel(x3 + 7, y3);
+}
+
+void DrawBigSmallObs(int x2, int y2){
+    LCD.SetFontColor(DINOCOLOR);
+
+    LCD.FillRectangle(x2 + 8, y2, 7, 48);
+    LCD.FillRectangle(x2 + 18, y2 + 6, 5, 21);
+    LCD.FillRectangle(x2, y2 + 6, 7, 15);
+    LCD.FillRectangle(x2 + 1, y2 + 18, 7, 5);
+    LCD.FillRectangle(x2 + 15, y2 + 25, 7, 4);
+    LCD.DrawHorizontalLine(y2 + 23, x2 + 3, x2 + 7);
+    LCD.DrawHorizontalLine(y2 + 29, x2 + 15, x2 + 19);
+
+    LCD.SetFontColor(WHITE);
+
+    LCD.DrawPixel(x2 + 8, y2);
+    LCD.DrawPixel(x2 + 14, y2);
+    LCD.DrawPixel(x2, y2 + 6);
+    LCD.DrawPixel(x2 + 5, y2 + 6);
+    LCD.DrawPixel(x2 + 18, y2 + 6);
+    LCD.DrawPixel(x2 + 22, y2 + 6);
+
+    x2 = x2 + 25;
+
+    LCD.SetFontColor(DINOCOLOR);
+
+    LCD.FillRectangle(x2 + 4, y2, 4, 24);
+    LCD.FillRectangle(x2 + 9, y2 + 4, 3, 7);
+    LCD.FillRectangle(x2, y2 + 4, 3, 10);
+    LCD.FillRectangle(x2 + 1, y2 + 13, 3, 2);
+    LCD.FillRectangle(x2 + 8, y2 + 9, 3, 3);
+    LCD.DrawPixel(x2 + 1, y2 + 3);
+    LCD.DrawPixel(x2 + 10, y2 + 3);
+
+    LCD.SetFontColor(WHITE);
+    LCD.DrawPixel(x2 + 4, y2);
+    LCD.DrawPixel(x2 + 7, y2);
 }

@@ -13,7 +13,12 @@
  C:\fehqt\Proteus/EWL/EWL_C/include/limits_api.h \
  C:\fehqt\Proteus/EWL/EWL_C/include/ewl_lib_ext1.h Libraries/FEHUtility.h \
  Startup/derivative.h Libraries/LCDColors.h Libraries/FEHIO.h \
- Drivers/adc16.h
+ Drivers/adc16.h C:\fehqt\Proteus/EWL/EWL_C/include/stdlib.h \
+ C:\fehqt\Proteus/EWL/EWL_C/include/cstdlib \
+ C:\fehqt\Proteus/EWL/EWL_C/include/div_t.h \
+ C:\fehqt\Proteus/EWL/EWL_C/include/null.h \
+ C:\fehqt\Proteus/EWL/EWL_C/include/size_t.h \
+ C:\fehqt\Proteus/EWL/EWL_C/include/ewl_rsize_t.h
 
 C:\fehqt\Proteus/EWL/EWL_C++/include/lib_ewl_c++.prefix:
 
@@ -56,3 +61,15 @@ Libraries/LCDColors.h:
 Libraries/FEHIO.h:
 
 Drivers/adc16.h:
+
+C:\fehqt\Proteus/EWL/EWL_C/include/stdlib.h:
+
+C:\fehqt\Proteus/EWL/EWL_C/include/cstdlib:
+
+C:\fehqt\Proteus/EWL/EWL_C/include/div_t.h:
+
+C:\fehqt\Proteus/EWL/EWL_C/include/null.h:
+
+C:\fehqt\Proteus/EWL/EWL_C/include/size_t.h:
+
+C:\fehqt\Proteus/EWL/EWL_C/include/ewl_rsize_t.h:
