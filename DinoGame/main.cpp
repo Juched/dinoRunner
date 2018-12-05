@@ -7,7 +7,7 @@
 
 #define JUMPHEIGHT 30
 #define GAMESPEED 20
-#define DINOCOLOR 8355711
+#define DINOCOLOR 000000
 #define x1 40   // Horizontal position of dino
 #define y2 132  // Vertical position of big cacti
 #define y3 156  // Vertical position of small cacti
@@ -207,7 +207,7 @@ int MainMenu(){
 }
 
 int Stats::PlayGame(){
-    float x, y, framerate;
+    float x, y;
     bool gameOver = false, touch = false, jump = true;
     int y1 = 137, crouch = 0, x2 = 300, x3;
     int frame = 1, hops = 0, jukes = 0;
@@ -238,11 +238,9 @@ int Stats::PlayGame(){
         // Overwrite previous frame with white color to avoid flashing that ocurrs with .Clear()
         ClearLCD(frame - 1, y1, crouch, x2, x3, obsType1, obsType2);
 
-        framerate = frame/TimeNow();    // For debug
         crouch = 0;
         touch = LCD.Touch(&x, &y);  // Look for touched screen
         LCD.SetFontColor(BLACK);
-        LCD.WriteAt(framerate, 220, 215);   // Remove for final game
         LCD.WriteAt("Highscore: ", 0, 0);
         LCD.WriteAt(hScore, 120, 0);
         LCD.WriteAt("Score: ", 0, 25);
@@ -394,30 +392,30 @@ int Stats::PlayGame(){
         //*********************************Hitboxes*********************************
         // obsType1 and 2 signify a max of 2 obstacles on the screen at one time
 
-        if(x1 + 40 >= x2 || x1 + 40 >= x3){
+        if(x1 + 35 >= x2 || x1 + 35 >= x3){
             if(obsType1 == 1){  // One big cactus hitbox
-                if(x1 < x2 + 25){
+                if(x1 < x2 + 30){
                     if(y1 + 43 > 132){
                         break;
                     }
                 }
             }
             if(obsType1 == 2){  // Big and small cactus hitbox
-                if(x1 < x2 + 30){
+                if(x1 < x2 + 35){
                     if(y1 + 43 > 132){
                         break;
                     }
                 }
             }
             if(obsType1 == 3){  // One small cactus hitbox
-                if(x1 < x2 + 15){
+                if(x1 < x2 + 25){
                     if(y1 + 43 > 145){
                         break;
                     }
                 }
             }
             if(obsType1 == 4){  // Two big cacti hitbox
-                if(x1 < x2 + 30){
+                if(x1 < x2 + 40){
                     if(y1 + 43 > 132){
                         break;
                     }
@@ -459,7 +457,7 @@ int Stats::PlayGame(){
                 }
             }
             if(obsType2 == 4){  // Two big cacti hitbox
-                if(x1 < x3 + 35){
+                if(x1 < x3 + 40){
                     if(y1 + 43 > 132){
                         break;
                     }
@@ -696,12 +694,11 @@ void InstructionsDisp(){
     // Print instructions
     LCD.WriteLine("Instructions");
     LCD.WriteLine("");
-    LCD.WriteLine("Tap on the top half of the screen to jump.");
-    LCD.WriteLine("Tap on the bottom half of the screen to crouch.");
-    LCD.WriteLine("Crouching while airborne makes you go down faster.");
-    LCD.WriteLine("Avoid making contact with any obstacles.");
-    LCD.WriteLine("Good luck!");
-    LCD.WriteAt("Press anywhere to return to menu.", 0, 210);
+    LCD.WriteLine("1. Tap on the top half of the screen to jump.");
+    LCD.WriteLine("2. Tap on the bottom half of the screen to crouch.");
+    LCD.WriteLine("3. Crouching while airborne makes you go down faster.");
+    LCD.WriteLine("4. Avoid making contact with any obstacles.");
+    LCD.WriteLine("5. Good luck!");
 
     // Wait for touch
     while(LCD.Touch(&x, &y));
