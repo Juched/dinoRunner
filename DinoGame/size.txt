@@ -1,2 +1,2 @@
    text	   data	    bss	    dec	    hex	filename
-  48760	   3424	   5552	  57736	   e188	../DinoGame.elf
+  48252	   3424	   5552	  57228	   df8c	../DinoGame.elf
