@@ -10,24 +10,24 @@
 #define DINOCOLOR 8355711
 #define x1 40   // Horizontal position of dino
 #define y2 132  // Vertical position of big cacti
-#define y3 145  // Vertical position of small cacti
-#define y4 70   // Vertical position of pterodactyl
+#define y3 156  // Vertical position of small cacti
+#define y4 100   // Vertical position of pterodactyl
 #define OBSTRATE 30 // Rate at which obstacles appear
 
 class Stats{    // Class containing functions and variables for statistics calculations
 public:
     Stats();
     void CumulativeScore(int);  // Cumulative score among all runs
-    int HighScore(int);    // Highest scoring run
+    void HighScore(int);    // Highest scoring run
     void JumpCount(int);    // Number of times jumped
     void JukeCount(int);    // Number of times avoiding obstacles
     void StatsDisp();   // Method to display statistics
+    int PlayGame();  // Function where calculations are made to print things in the right location
 private:
     int cScore, hScore, totalhops, totaljukes;
 };
 
 int MainMenu(); // Menu option function
-int PlayGame(Stats S);  // Function where calculations are made to print things in the right location
 void CreditsDisp(); // Credits display function
 void InstructionsDisp();    // Instructions display function
 void ClearLCD(int frame, int y1, int crouch, int x2, int x3, int obsType1, int obsType2);   // Rewrites the previous frame with white to avoid flashing
@@ -44,16 +44,16 @@ void DrawBigSmallObs(int x, int color); // 1 big and 1 small cacti
 void DrawPterodactyl(int x, int color); // Pterodactyl
 
 int main(void){
-    int choice, replay = 1;
+    int choice, replay;
 
     Stats S;    // Declare object of Stats class, passed into play game function
 
     do{
         choice = MainMenu();    // Call main menu function, returns a value based on the option selected
-
+        replay = 1;
         switch(choice){
             case 1: while(replay == 1){ // Run forever so long as replay keeps getting pressed
-                        replay = PlayGame(S);    // Returns a 1 if the player chooses to play again, a 0 if main menu is pressed
+                        replay = S.PlayGame();    // Returns a 1 if the player chooses to play again, a 0 if main menu is pressed
                     }
                     break;
             case 2: S.StatsDisp();  // Display statistics
@@ -77,11 +77,10 @@ void Stats::CumulativeScore(int frame){ // Calculate cumulative score
     cScore = cScore + frame;
 }
 
-int Stats::HighScore(int frame){   // Calculate high score
+void Stats::HighScore(int frame){   // Calculate high score
     if(frame > hScore){
         hScore = frame;
     }
-    return(hScore);
 }
 
 void Stats::JukeCount(int jukes){   // Calculate total jukes
@@ -107,7 +106,7 @@ void Stats::StatsDisp(){    // Display stats function
     LCD.WriteLine(hScore);
     LCD.Write("Total Score: ");
     LCD.WriteLine(cScore);
-    LCD.Write("Total Obstacles Avoided: ");
+    LCD.Write("Total Avoided: ");
     LCD.WriteLine(totalhops);
     LCD.Write("Total Jumps: ");
     LCD.WriteLine(totalhops);
@@ -207,7 +206,7 @@ int MainMenu(){
     }
 }
 
-int PlayGame(Stats S){
+int Stats::PlayGame(){
     float x, y, framerate;
     bool gameOver = false, touch = false, jump = true;
     int y1 = 137, crouch = 0, x2 = 300, x3;
@@ -244,10 +243,10 @@ int PlayGame(Stats S){
         touch = LCD.Touch(&x, &y);  // Look for touched screen
         LCD.SetFontColor(BLACK);
         LCD.WriteAt(framerate, 220, 215);   // Remove for final game
-        LCD.Write("Highscore: ");
-        LCD.WriteAt(highScore, 70, 0);
-        LCD.WriteAt("Score: ", 140, 25);
-        LCD.WriteAt(frame, 250, 25);    // Score is kept as number frames survived
+        LCD.WriteAt("Highscore: ", 0, 0);
+        LCD.WriteAt(hScore, 120, 0);
+        LCD.WriteAt("Score: ", 0, 25);
+        LCD.WriteAt(frame, 75, 25);    // Score is kept as number frames survived
 
         //*********************************Jump controls*********************************
 
@@ -404,7 +403,7 @@ int PlayGame(Stats S){
                 }
             }
             if(obsType1 == 2){  // Big and small cactus hitbox
-                if(x1 < x2 + 40){
+                if(x1 < x2 + 30){
                     if(y1 + 43 > 132){
                         break;
                     }
@@ -418,7 +417,7 @@ int PlayGame(Stats S){
                 }
             }
             if(obsType1 == 4){  // Two big cacti hitbox
-                if(x1 < x2 + 40){
+                if(x1 < x2 + 30){
                     if(y1 + 43 > 132){
                         break;
                     }
@@ -454,13 +453,13 @@ int PlayGame(Stats S){
             }
             if(obsType2 == 3){  // One small cactus hitbox
                 if(x1 < x3 + 15){
-                    if(y1 + 43 > 145){
+                    if(y1 + 43 > 156){
                         break;
                     }
                 }
             }
             if(obsType2 == 4){  // Two big cacti hitbox
-                if(x1 < x3 + 40){
+                if(x1 < x3 + 35){
                     if(y1 + 43 > 132){
                         break;
                     }
@@ -468,7 +467,7 @@ int PlayGame(Stats S){
             }
             if(obsType2 == 5){  // Two small cacti hitbox
                 if(x1 < x3 + 30){
-                    if(y1 + 43 > 145){
+                    if(y1 + 43 > 156){
                         break;
                     }
                 }
@@ -501,17 +500,19 @@ int PlayGame(Stats S){
     }   // End of while loop
 
     // Death noise
-    Buzzer.Tone(FEHBuzzer::Bf3, 750);
+    Buzzer.Tone(FEHBuzzer::A7, 750);
 
     // Calculate statistics
-    S.CumulativeScore(frame);
-    highScore = S.HighScore(frame);
-    S.JumpCount(hops);
-    S.JukeCount(jukes);
+    CumulativeScore(frame);
+    HighScore(frame);
+    JumpCount(hops);
+    JukeCount(jukes);
 
     // Clear screen
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
+
+    LCD.SetFontColor(BLACK);
 
     // Black border rectangles
     LCD.FillRectangle(52, 66, 105, 55); // Top right
@@ -527,30 +528,38 @@ int PlayGame(Stats S){
 
     // Text
     LCD.WriteAt("Replay", 62, 76);    // Top right
-    LCD.WriteAt("Menu", 172, 76);   // Top left
+    LCD.WriteAt("Quit", 172, 76);   // Top left
 
-    // Change colors to show button has been pressed
-    if(x > 57 && x < 152 && y > 71 && y < 116){
-        LCD.SetFontColor(BLUE);
-        LCD.FillRectangle(52, 66, 105, 55); // Top right
-        LCD.SetFontColor(WHITE);
-        LCD.FillRectangle(57, 71, 95, 45);  // Top right
-        LCD.SetFontColor(BLUE);
-        LCD.WriteAt("Replay", 62, 76);    // Top right
-        Sleep(500);
+    while(true){
+        // Wait for touch screen press
+        while(LCD.Touch(&x, &y));
 
-        return(1);  // Replay option
-    }
-    else if(x > 167 && x < 262 && y > 71 && y <116){
-        LCD.SetFontColor(BLUE);
-        LCD.FillRectangle(162, 66, 105, 55);    // Top left
-        LCD.SetFontColor(WHITE);
-        LCD.FillRectangle(167, 71, 95, 45);  // Top left
-        LCD.SetFontColor(BLUE);
-        LCD.WriteAt("Quit", 172, 76);   // Top left
-        Sleep(500);
+        // Wait for touch screen release
+        while(!LCD.Touch(&x, &y));
 
-        return(0);  // Quit option
+        // Change colors to show button has been pressed
+        if(x > 57 && x < 152 && y > 71 && y < 116){
+            LCD.SetFontColor(BLUE);
+            LCD.FillRectangle(52, 66, 105, 55); // Top right
+            LCD.SetFontColor(WHITE);
+            LCD.FillRectangle(57, 71, 95, 45);  // Top right
+            LCD.SetFontColor(BLUE);
+            LCD.WriteAt("Replay", 62, 76);    // Top right
+            Sleep(500);
+
+            return(1);  // Replay option
+        }
+        else if(x > 167 && x < 262 && y > 71 && y <116){
+            LCD.SetFontColor(BLUE);
+            LCD.FillRectangle(162, 66, 105, 55);    // Top left
+            LCD.SetFontColor(WHITE);
+            LCD.FillRectangle(167, 71, 95, 45);  // Top left
+            LCD.SetFontColor(BLUE);
+            LCD.WriteAt("Quit", 172, 76);   // Top left
+            Sleep(500);
+
+            return(0);  // Quit option
+        }
     }
 }   // End PlayGame
 
@@ -583,36 +592,40 @@ void DrawFrame(int frame, int y1, int crouch, int x2, int x3, int obsType1, int 
         DrawDinoC(y1 + 10, DINOCOLOR);
     }
 
-    // Cases for each randomly generated object type
-    switch(obsType1){
-        case 0: break;
-        case 1: DrawBigObs(x2, DINOCOLOR);
-                break;
-        case 2: DrawBigSmallObs(x2, DINOCOLOR);
-                break;
-        case 3: DrawSmallObs(x2, DINOCOLOR);
-                break;
-        case 4: Draw2BigObs(x2, DINOCOLOR);
-                break;
-        case 5: Draw2SmallObs(x2, DINOCOLOR);
-                break;
-        case 6: DrawPterodactyl(x2, DINOCOLOR);
-                break;
+    if(x2 != 300){
+        // Cases for each randomly generated object type
+        switch(obsType1){
+            case 0: break;
+            case 1: DrawBigObs(x2, DINOCOLOR);
+                    break;
+            case 2: DrawBigSmallObs(x2, DINOCOLOR);
+                    break;
+            case 3: DrawSmallObs(x2, DINOCOLOR);
+                    break;
+            case 4: Draw2BigObs(x2, DINOCOLOR);
+                    break;
+            case 5: Draw2SmallObs(x2, DINOCOLOR);
+                    break;
+            case 6: DrawPterodactyl(x2, DINOCOLOR);
+                    break;
+        }
     }
-    switch(obsType2){
-        case 0: break;
-        case 1: DrawBigObs(x3, DINOCOLOR);
-                break;
-        case 2: DrawBigSmallObs(x3, DINOCOLOR);
-                break;
-        case 3: DrawSmallObs(x3, DINOCOLOR);
-                break;
-        case 4: Draw2BigObs(x3, DINOCOLOR);
-                break;
-        case 5: Draw2SmallObs(x3, DINOCOLOR);
-                break;
-        case 6: DrawPterodactyl(x3, DINOCOLOR);
-                break;
+    if(x3 != 300){
+        switch(obsType2){
+            case 0: break;
+            case 1: DrawBigObs(x3, DINOCOLOR);
+                    break;
+            case 2: DrawBigSmallObs(x3, DINOCOLOR);
+                    break;
+            case 3: DrawSmallObs(x3, DINOCOLOR);
+                    break;
+            case 4: Draw2BigObs(x3, DINOCOLOR);
+                    break;
+            case 5: Draw2SmallObs(x3, DINOCOLOR);
+                    break;
+            case 6: DrawPterodactyl(x3, DINOCOLOR);
+                    break;
+        }
     }
 }
 
@@ -708,7 +721,17 @@ void CreditsDisp(){
     LCD.SetFontColor(BLACK);
 
     // Print credits
-    LCD.Write("Credits");
+    LCD.WriteLine("Credits");
+    LCD.WriteLine("");
+    LCD.WriteLine("Authors: Alex Myers and Parth Parekh");
+    LCD.WriteLine("");
+    LCD.WriteLine("Sources: ");
+    LCD.WriteLine("\thttps://opencv.org");
+    LCD.WriteLine("\thttps://chromedino.com");
+    LCD.WriteLine("\thttps://u.osu.edu/fehproteus");
+    LCD.WriteLine("");
+    LCD.WriteLine("Website: https://u.osu.edu/feh1281au18sec23585i2/");
+
 
     // Wait for touch
     while(LCD.Touch(&x, &y));
