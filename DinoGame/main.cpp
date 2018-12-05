@@ -3,6 +3,7 @@
 #include <FEHIO.h>
 #include <FEHUtility.h>
 #include <stdlib.h>
+#include <FEHBuzzer.h>
 
 #define JUMPHEIGHT 30
 #define GAMESPEED 20
@@ -13,36 +14,49 @@
 #define y4 70   // Vertical position of pterodactyl
 #define OBSTRATE 30 // Rate at which obstacles appear
 
-int MainMenu();
-int PlayGame();
-void StatsDisp();
-void CreditsDisp();
-void InstructionsDisp();
-void ClearLCD(int frame, int y1, int crouch, int x2, int x3, int obsType1, int obsType2);
-void DrawFrame(int frame, int y1, int crouch, int x2, int x3, int obsType1, int obsType2);
-void DrawDinoR(int y, int color);
-void DrawDinoL(int y, int color);
-void DrawDinoJ(int y, int color);
-void DrawDinoC(int y, int color);
-void DrawBigObs(int x, int color);
-void Draw2BigObs(int x, int color);
-void DrawSmallObs(int x, int color);
-void Draw2SmallObs(int x, int color);
-void DrawBigSmallObs(int x, int color);
-void DrawPterodactyl(int x, int color);
+class Stats{    // Class containing functions and variables for statistics calculations
+public:
+    Stats();
+    void CumulativeScore(int);  // Cumulative score among all runs
+    void HighScore(int);    // Highest scoring run
+    void JumpCount(int);    // Number of times jumped
+    void JukeCount(int);    // Number of times avoiding obstacles
+    void StatsDisp();   // Method to display statistics
+private:
+    int cScore, hScore, totalhops, totaljukes;
+};
+
+int MainMenu(); // Menu option function
+int PlayGame(Stats S);  // Function where calculations are made to print things in the right location
+void CreditsDisp(); // Credits display function
+void InstructionsDisp();    // Instructions display function
+void ClearLCD(int frame, int y1, int crouch, int x2, int x3, int obsType1, int obsType2);   // Rewrites the previous frame with white to avoid flashing
+void DrawFrame(int frame, int y1, int crouch, int x2, int x3, int obsType1, int obsType2);  // Draws each frame
+void DrawDinoR(int y, int color);   // Dino with right leg down
+void DrawDinoL(int y, int color);   // Dino with left leg down
+void DrawDinoJ(int y, int color);   // Jumping dino
+void DrawDinoC(int y, int color);   // Crouching dino
+void DrawBigObs(int x, int color);  // 1 big cactus
+void Draw2BigObs(int x, int color); // 2 big cacti
+void DrawSmallObs(int x, int color);    // 1 small cactus
+void Draw2SmallObs(int x, int color);   // 2 small cacti
+void DrawBigSmallObs(int x, int color); // 1 big and 1 small cacti
+void DrawPterodactyl(int x, int color); // Pterodactyl
 
 int main(void){
     int choice, replay = 1;
 
+    Stats S;    // Declare object of Stats class
+
     do{
-        choice = MainMenu();
+        choice = MainMenu();    // Call main menu function
 
         switch(choice){
-            case 1: while(replay == 1){
-                        replay = PlayGame();    // Returns a 1 if the player chooses to play again, a 0 if main menu is pressed
+            case 1: while(replay == 1){ // Run forever so long as replay keeps getting pressed
+                        replay = PlayGame(S);    // Returns a 1 if the player chooses to play again, a 0 if main menu is pressed
                     }
                     break;
-            case 2: StatsDisp();
+            case 2: S.StatsDisp();
                     break;
             case 3: InstructionsDisp();
                     break;
@@ -50,6 +64,56 @@ int main(void){
                     break;
         }
     }while(true);
+}
+
+Stats::Stats(){
+    cScore = 0;
+    hScore = 0;
+    totalhops = 0;
+    totaljukes = 0;
+}
+
+void Stats::CumulativeScore(int frame){
+    cScore = cScore + frame;
+}
+
+void Stats::HighScore(int frame){
+    if(frame > hScore){
+        hScore = frame;
+    }
+}
+
+void Stats::JukeCount(int jukes){
+    totaljukes = totaljukes + jukes;
+}
+
+void Stats::JumpCount(int hops){
+    totalhops = totalhops + hops;
+}
+
+void Stats::StatsDisp(){
+    float x, y;
+    LCD.SetBackgroundColor(WHITE);
+    LCD.Clear();
+    LCD.SetFontColor(BLACK);
+    LCD.WriteLine("Statistics");
+    LCD.WriteLine("");
+    LCD.Write("High Score: ");
+    LCD.WriteLine(hScore);
+    LCD.Write("Total Score: ");
+    LCD.WriteLine(cScore);
+    LCD.Write("Total Obstacles Avoided: ");
+    LCD.WriteLine(totalhops);
+    LCD.Write("Total Jumps: ");
+    LCD.WriteLine(totalhops);
+
+    // Wait for touch
+    while(LCD.Touch(&x, &y));
+
+    // Wait for touch release
+    while(!LCD.Touch(&x, &y));
+
+    Sleep(300);
 }
 
 int MainMenu(){
@@ -137,15 +201,14 @@ int MainMenu(){
     }
 }
 
-int PlayGame(){
+int PlayGame(Stats S){
     float x, y, framerate;
     bool gameOver = false, touch = false, jump = true;
     int y1 = 137, crouch = 0, x2 = 300, x3;
-    int frame = 1;
+    int frame = 1, hops = 0, jukes = 0;
     int vel = 0, grav = 4, x2vel = 0, x3vel = 0, obsType1, obsType2;
     int rand_num, x2type, x3type;
     srand(TimeNow()*1000);  // Random number seed
-
 
     // Start countdown
     LCD.SetBackgroundColor(WHITE);
@@ -179,6 +242,8 @@ int PlayGame(){
 
         if(touch && y1 > 75 && y < 120 && jump){
             vel = 25;
+            Buzzer.Tone(FEHBuzzer::A6, 50);
+            hops++;
         }
         else if(touch && y >= 120){
             if(y1 < 137){
@@ -391,12 +456,29 @@ int PlayGame(){
                     }
                 }
             }
+            else{
+                jukes++;
+            }
+        }
+
+        if(frame % 100 == 0){
+            Buzzer.Tone(FEHBuzzer::A7, 50);
         }
 
         frame++;
         touch = false;
         Sleep(20);
-    }
+    }   // End of while loop
+
+    Buzzer.Tone(FEHBuzzer::Bf3, 750);
+
+    // Calculate statistics
+    S.CumulativeScore(frame);
+    S.HighScore(frame);
+    S.JumpCount(hops);
+    S.JukeCount(jukes);
+
+    // Clear screen
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
 
@@ -556,23 +638,14 @@ void InstructionsDisp(){
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
-    LCD.Write("Instructions");
-
-    // Wait for touch
-    while(LCD.Touch(&x, &y));
-
-    // Wait for touch release
-    while(!LCD.Touch(&x, &y));
-
-    Sleep(300);
-}
-
-void StatsDisp(){
-    float x, y;
-    LCD.SetBackgroundColor(WHITE);
-    LCD.Clear();
-    LCD.SetFontColor(BLACK);
-    LCD.Write("Statistics");
+    LCD.WriteLine("Instructions");
+    LCD.WriteLine("");
+    LCD.WriteLine("Tap on the top half of the screen to jump.");
+    LCD.WriteLine("Tap on the bottom half of the screen to crouch.");
+    LCD.WriteLine("Crouching while airborne makes you go down faster.");
+    LCD.WriteLine("Avoid making contact with any obstacles.");
+    LCD.WriteLine("Good luck!");
+    LCD.WriteAt("Press anywhere to return to menu.", 0, 210);
 
     // Wait for touch
     while(LCD.Touch(&x, &y));
