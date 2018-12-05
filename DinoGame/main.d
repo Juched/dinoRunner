@@ -18,7 +18,7 @@
  C:\fehqt\Proteus/EWL/EWL_C/include/div_t.h \
  C:\fehqt\Proteus/EWL/EWL_C/include/null.h \
  C:\fehqt\Proteus/EWL/EWL_C/include/size_t.h \
- C:\fehqt\Proteus/EWL/EWL_C/include/ewl_rsize_t.h
+ C:\fehqt\Proteus/EWL/EWL_C/include/ewl_rsize_t.h Libraries/FEHBuzzer.h
 
 C:\fehqt\Proteus/EWL/EWL_C++/include/lib_ewl_c++.prefix:
 
@@ -73,3 +73,5 @@ C:\fehqt\Proteus/EWL/EWL_C/include/null.h:
 C:\fehqt\Proteus/EWL/EWL_C/include/size_t.h:
 
 C:\fehqt\Proteus/EWL/EWL_C/include/ewl_rsize_t.h:
+
+Libraries/FEHBuzzer.h:
