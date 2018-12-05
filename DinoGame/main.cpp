@@ -18,7 +18,7 @@ class Stats{    // Class containing functions and variables for statistics calcu
 public:
     Stats();
     void CumulativeScore(int);  // Cumulative score among all runs
-    void HighScore(int);    // Highest scoring run
+    int HighScore(int);    // Highest scoring run
     void JumpCount(int);    // Number of times jumped
     void JukeCount(int);    // Number of times avoiding obstacles
     void StatsDisp();   // Method to display statistics
@@ -46,56 +46,61 @@ void DrawPterodactyl(int x, int color); // Pterodactyl
 int main(void){
     int choice, replay = 1;
 
-    Stats S;    // Declare object of Stats class
+    Stats S;    // Declare object of Stats class, passed into play game function
 
     do{
-        choice = MainMenu();    // Call main menu function
+        choice = MainMenu();    // Call main menu function, returns a value based on the option selected
 
         switch(choice){
             case 1: while(replay == 1){ // Run forever so long as replay keeps getting pressed
                         replay = PlayGame(S);    // Returns a 1 if the player chooses to play again, a 0 if main menu is pressed
                     }
                     break;
-            case 2: S.StatsDisp();
+            case 2: S.StatsDisp();  // Display statistics
                     break;
-            case 3: InstructionsDisp();
+            case 3: InstructionsDisp(); // Display instructions
                     break;
-            case 4: CreditsDisp();
+            case 4: CreditsDisp();  // Display credits
                     break;
         }
-    }while(true);
+    }while(true);   // Run indefinitely
 }
 
-Stats::Stats(){
+Stats::Stats(){ // Constructor
     cScore = 0;
     hScore = 0;
     totalhops = 0;
     totaljukes = 0;
 }
 
-void Stats::CumulativeScore(int frame){
+void Stats::CumulativeScore(int frame){ // Calculate cumulative score
     cScore = cScore + frame;
 }
 
-void Stats::HighScore(int frame){
+int Stats::HighScore(int frame){   // Calculate high score
     if(frame > hScore){
         hScore = frame;
     }
+    return(hScore);
 }
 
-void Stats::JukeCount(int jukes){
+void Stats::JukeCount(int jukes){   // Calculate total jukes
     totaljukes = totaljukes + jukes;
 }
 
-void Stats::JumpCount(int hops){
+void Stats::JumpCount(int hops){    // Calculate total hops
     totalhops = totalhops + hops;
 }
 
-void Stats::StatsDisp(){
+void Stats::StatsDisp(){    // Display stats function
     float x, y;
+
+    // Reset screen
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
+
+    // Print values
     LCD.WriteLine("Statistics");
     LCD.WriteLine("");
     LCD.Write("High Score: ");
@@ -119,6 +124,7 @@ void Stats::StatsDisp(){
 int MainMenu(){
     float x, y;
 
+    // Reset screen
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
@@ -164,7 +170,7 @@ int MainMenu(){
         LCD.WriteAt("Play", 62, 76);    // Top right
         Sleep(500);
 
-        return(1);
+        return(1);  // Return value for play option
     }
     else if(x > 167 && x < 262 && y > 71 && y <116){
         LCD.SetFontColor(BLUE);
@@ -175,7 +181,7 @@ int MainMenu(){
         LCD.WriteAt("Stats", 172, 76);   // Top left
         Sleep(500);
 
-        return(2);
+        return(2);  // Return value for stats option
     }
     else if(x > 57 && x < 152 && y > 131 && y < 176){
         LCD.SetFontColor(BLUE);
@@ -186,7 +192,7 @@ int MainMenu(){
         LCD.WriteAt("Instructions", 62, 136);    // Bottom right
         Sleep(500);
 
-        return(3);
+        return(3);  // Return value for instructions option
     }
     else if(x > 167 && x < 262 && y > 131 && y < 176){
         LCD.SetFontColor(BLUE);
@@ -197,7 +203,7 @@ int MainMenu(){
         LCD.WriteAt("Credits", 172, 136); // Bottom left
         Sleep(500);
 
-        return(4);
+        return(4);  // Return value for credits option
     }
 }
 
@@ -208,6 +214,8 @@ int PlayGame(Stats S){
     int frame = 1, hops = 0, jukes = 0;
     int vel = 0, grav = 4, x2vel = 0, x3vel = 0, obsType1, obsType2;
     int rand_num, x2type, x3type;
+    int highScore = 0;
+
     srand(TimeNow()*1000);  // Random number seed
 
     // Start countdown
@@ -228,60 +236,72 @@ int PlayGame(Stats S){
     LCD.Clear();
 
     while(!gameOver){
+        // Overwrite previous frame with white color to avoid flashing that ocurrs with .Clear()
         ClearLCD(frame - 1, y1, crouch, x2, x3, obsType1, obsType2);
 
-        framerate = frame/TimeNow();
+        framerate = frame/TimeNow();    // For debug
         crouch = 0;
-        touch = LCD.Touch(&x, &y);
+        touch = LCD.Touch(&x, &y);  // Look for touched screen
         LCD.SetFontColor(BLACK);
-        LCD.WriteAt(touch, 0, 25);
-        LCD.WriteAt(framerate, 220, 215); // Framerate for debug
-        LCD.WriteAt("Highscore: ", 140, 0); // Add this in
+        LCD.WriteAt(framerate, 220, 215);   // Remove for final game
+        LCD.Write("Highscore: ");
+        LCD.WriteAt(highScore, 70, 0);
         LCD.WriteAt("Score: ", 140, 25);
         LCD.WriteAt(frame, 250, 25);    // Score is kept as number frames survived
 
-        if(touch && y1 > 75 && y < 120 && jump){
+        //*********************************Jump controls*********************************
+
+        // Condition to set velocity to dino
+        if(touch && y1 > 75 && y < 120 && jump){    // Jump when top half of screen is pressed
             vel = 25;
-            Buzzer.Tone(FEHBuzzer::A6, 50);
-            hops++;
+            Buzzer.Tone(FEHBuzzer::A6, 50); // Tone when jumping
+            hops++; // Jump counter
         }
-        else if(touch && y >= 120){
+        else if(touch && y >= 120){ // Crouch when bottom half of screen is pressed
             if(y1 < 137){
-                vel = vel - 7;
+                vel = vel - 7;  // Go down faster when crouching if airborne
                 crouch = 1;
             }else{
                 crouch = 1;
             }
         }
 
+        // Max jump height
         if(y1 > 75){
             jump = false;
         }
 
-        y1 = y1 - vel;
+        y1 = y1 - vel;  // Jump upwards by decreasing y1 coordinate
+
+        // Stop when back on the ground
         if(y1 > 137){
             y1 = 137;
             vel = 0;
             jump = true;
         }
 
+        // Acceleration constant
         vel = vel - grav;
+
+        //*********************************Obstacles*********************************
 
         x2 = x2 - x2vel;    // Moves obstacle 1 to the left
         x3 = x3 - x3vel;    // Moves obstacle 2 to the left
 
+        // Start condition
         if(x2 <= 0){
             x2 = 300;
             x2vel = 0;
             obsType1 = 0;
         }
+        // Obstacle returns to start when at end of screen
         if(x3 <= 0){
             x3 = 300;
             x3vel = 0;
             obsType2 = 0;
         }
 
-        if(frame % OBSTRATE == 0){
+        if(frame % OBSTRATE == 0){  // Obstacle rate adjustment
             rand_num = rand() % 40;
             if(rand_num >= 0 && rand_num <= 9){ // One big cactus
                 if(x2 == 300){
@@ -369,7 +389,11 @@ int PlayGame(Stats S){
             }
         }
 
+        // Draw entire frame
         DrawFrame(frame, y1, crouch, x2, x3, obsType1, obsType2);
+
+        //*********************************Hitboxes*********************************
+        // obsType1 and 2 signify a max of 2 obstacles on the screen at one time
 
         if(x1 + 40 >= x2 || x1 + 40 >= x3){
             if(obsType1 == 1){  // One big cactus hitbox
@@ -457,24 +481,31 @@ int PlayGame(Stats S){
                 }
             }
             else{
-                jukes++;
+                jukes++;    // If no hitbox is encountered, increase avoided obstacle counter
             }
         }
 
+        // Every 100 points/frames, make a noise
         if(frame % 100 == 0){
             Buzzer.Tone(FEHBuzzer::A7, 50);
         }
 
+        // Frame counter
         frame++;
+
+        // Reset touch
         touch = false;
+
+        // Buffer
         Sleep(20);
     }   // End of while loop
 
+    // Death noise
     Buzzer.Tone(FEHBuzzer::Bf3, 750);
 
     // Calculate statistics
     S.CumulativeScore(frame);
-    S.HighScore(frame);
+    highScore = S.HighScore(frame);
     S.JumpCount(hops);
     S.JukeCount(jukes);
 
@@ -508,7 +539,7 @@ int PlayGame(Stats S){
         LCD.WriteAt("Replay", 62, 76);    // Top right
         Sleep(500);
 
-        return(1);
+        return(1);  // Replay option
     }
     else if(x > 167 && x < 262 && y > 71 && y <116){
         LCD.SetFontColor(BLUE);
@@ -519,33 +550,40 @@ int PlayGame(Stats S){
         LCD.WriteAt("Quit", 172, 76);   // Top left
         Sleep(500);
 
-        return(0);
+        return(0);  // Quit option
     }
-}
+}   // End PlayGame
 
 void DrawFrame(int frame, int y1, int crouch, int x2, int x3, int obsType1, int obsType2){
 
+    // Set colors
     LCD.SetBackgroundColor(WHITE);
     LCD.SetFontColor(BLACK);
 
-    LCD.Write(y1);
+    // Draw ground
     LCD.DrawHorizontalLine(180, 0, 319);
     LCD.DrawHorizontalLine(181, 0, 319);
     LCD.DrawHorizontalLine(182, 0, 319);
 
+    // Switch between right and left legs down every 2 frames
     if(frame % 4 >= 0 && frame % 4 < 2 && y1 == 137 && !crouch){
         DrawDinoL(y1, DINOCOLOR);
     }
     else if(frame % 4 >= 2 && frame % 4 <= 3 && y1 == 137 && !crouch){
         DrawDinoR(y1, DINOCOLOR);
     }
+
+    // Draw jumping dino
     else if(y1 < 137 && !crouch){
         DrawDinoJ(y1, DINOCOLOR);
     }
+
+    // Draw crouching dino
     else if(crouch){
         DrawDinoC(y1 + 10, DINOCOLOR);
     }
 
+    // Cases for each randomly generated object type
     switch(obsType1){
         case 0: break;
         case 1: DrawBigObs(x2, DINOCOLOR);
@@ -579,6 +617,7 @@ void DrawFrame(int frame, int y1, int crouch, int x2, int x3, int obsType1, int 
 }
 
 void ClearLCD(int frame, int y1, int crouch, int x2, int x3, int obsType1, int obsType2){
+    // Same as DrawFrame except it is passed previous frame and color is always white
 
     LCD.SetBackgroundColor(WHITE);
     LCD.SetFontColor(WHITE);
@@ -635,9 +674,13 @@ void ClearLCD(int frame, int y1, int crouch, int x2, int x3, int obsType1, int o
 
 void InstructionsDisp(){
     float x, y;
+
+    // Reset screen
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
+
+    // Print instructions
     LCD.WriteLine("Instructions");
     LCD.WriteLine("");
     LCD.WriteLine("Tap on the top half of the screen to jump.");
@@ -658,9 +701,13 @@ void InstructionsDisp(){
 
 void CreditsDisp(){
     float x, y;
+
+    // Reset screen
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
     LCD.SetFontColor(BLACK);
+
+    // Print credits
     LCD.Write("Credits");
 
     // Wait for touch
@@ -672,7 +719,7 @@ void CreditsDisp(){
     Sleep(300);
 }
 
-void DrawDinoR(int y1, int color){
+void DrawDinoR(int y1, int color){  // Right leg down dino
     // x1 and y1 are top left corner coordinates
 
     //****************Standard among dinos R, L, and J****************
@@ -711,7 +758,7 @@ void DrawDinoR(int y1, int color){
     LCD.FillRectangle(21 + x1, 37 + y1, 5, 2);
 }
 
-void DrawDinoL(int y1, int color){
+void DrawDinoL(int y1, int color){  // Left leg down dino
     // x1 and y1 are top left corner coordinates
 
     //****************Standard among dinos R, L, and J****************
@@ -751,7 +798,7 @@ void DrawDinoL(int y1, int color){
     LCD.FillRectangle(23 + x1, 41 + y1, 2, 2);
 }
 
-void DrawDinoJ(int y1, int color){
+void DrawDinoJ(int y1, int color){  // Jumping dino
     // x1 and y1 are top left corner coordinates
 
     //****************Standard among dinos R, L, and J****************
@@ -792,7 +839,7 @@ void DrawDinoJ(int y1, int color){
     LCD.FillRectangle(23 + x1, 41 + y1, 2, 2);
 }
 
-void DrawDinoC(int y1, int color){
+void DrawDinoC(int y1, int color){  // Crouching dino
     // x1 and y1 are top left corner coordinates
 
     LCD.SetFontColor(color);
@@ -831,7 +878,7 @@ void DrawDinoC(int y1, int color){
     LCD.FillRectangle(x1 + 49, y1 + 5, 3, 3);
 }
 
-void DrawBigObs(int x2, int color){
+void DrawBigObs(int x2, int color){ // 1 big cactus
     LCD.SetFontColor(color);
 
     LCD.FillRectangle(x2 + 8, y2, 7, 48);
@@ -852,7 +899,7 @@ void DrawBigObs(int x2, int color){
     LCD.DrawPixel(x2 + 22, y2 + 6);
 }
 
-void Draw2BigObs(int x2, int color){
+void Draw2BigObs(int x2, int color){    // 2 big cacti
     LCD.SetFontColor(color);
 
     LCD.FillRectangle(x2 + 8, y2, 7, 48);
@@ -894,7 +941,7 @@ void Draw2BigObs(int x2, int color){
     LCD.DrawPixel(x2 + 22, y2 + 6);
 }
 
-void DrawSmallObs(int x3, int color){
+void DrawSmallObs(int x3, int color){   // 1 small cactus
     LCD.SetFontColor(color);
 
     LCD.FillRectangle(x3 + 4, y3, 4, 24);
@@ -910,7 +957,7 @@ void DrawSmallObs(int x3, int color){
     LCD.DrawPixel(x3 + 7, y3);
 }
 
-void Draw2SmallObs(int x3, int color){
+void Draw2SmallObs(int x3, int color){  // 2 small cacti
     LCD.SetFontColor(color);
 
     LCD.FillRectangle(x3 + 4, y3, 4, 24);
@@ -942,7 +989,7 @@ void Draw2SmallObs(int x3, int color){
     LCD.DrawPixel(x3 + 7, y3);
 }
 
-void DrawBigSmallObs(int x2, int color){
+void DrawBigSmallObs(int x2, int color){    // 1 small 1 big cactus
 
     LCD.SetFontColor(color);
 
@@ -980,7 +1027,7 @@ void DrawBigSmallObs(int x2, int color){
     LCD.DrawPixel(x2 + 7, y3);
 }
 
-void DrawPterodactyl(int x4, int color){
+void DrawPterodactyl(int x4, int color){    // Pterodactyl
     LCD.SetFontColor(color);
 
     LCD.FillRectangle(x4, y4, 18, 13);
