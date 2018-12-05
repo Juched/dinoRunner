@@ -712,7 +712,6 @@ void InstructionsDisp(){
 void CreditsDisp(){
     float x, y;
 
-
     // Reset screen
     LCD.SetBackgroundColor(WHITE);
     LCD.Clear();
@@ -728,9 +727,7 @@ void CreditsDisp(){
     LCD.WriteLine("\thttps://chromedino.com");
     LCD.WriteLine("\thttps://u.osu.edu/fehproteus");
     LCD.WriteLine("");
-    LCD.WriteLine("Website: https://u.osu.edu/feh1281au18sec23585i2/"); 
-
-   
+    LCD.WriteLine("Website: https://u.osu.edu/feh1281au18sec23585i2/");
 
 
     // Wait for touch
